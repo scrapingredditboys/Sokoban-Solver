@@ -6,11 +6,11 @@
 #include <string>
 #include <vector>
 
-#include "level.h";
+#include "level.h"
 
 class FileReader {
     public:
-        FileReader(std::string _filename);
+        FileReader(std::string &_filename);
         ~FileReader();
 
         std::vector<Level*> read();

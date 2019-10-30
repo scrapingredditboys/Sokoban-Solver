@@ -3,30 +3,25 @@
 Level::Level(std::vector<std::string> &levelData) {
     width = calculateWidth(levelData);
     height = calculateHeight(levelData);
+    boxCount = 0;
 
     normalizeLevelData(levelData);
 
-    board = new char*[height];
+    board = new char[width * height];
 
-    for(int i = 0; i < height; i++) {
-        board[i] = new char[width];
-        for(int j = 0; j < width; j++) {
-            board[i][j] = levelData[i][j];
-        }
+    for(int i = 0; i < height * width; i++) {
+        board[i] = levelData[i / width][i % width];
     }
 }
 
 Level::~Level() {
-    for(int i = 0; i < height; i++) {
-        delete[] board[i];
-    }
     delete[] board;
 }
 
 void Level::print() {
     for(int i = 0; i < height; i++) {
         for(int j = 0; j < width; j++) {
-            std::cout << board[i][j];
+            std::cout << board[i * width + j];
         }
         std::cout << std::endl;
     }
@@ -49,6 +44,9 @@ void Level::normalizeLevelData(std::vector<std::string> &levelData) {
         for(int j = 0; j < levelData[i].length(); j++) {
             if(levelData[i][j] == '-' || levelData[i][j] == '_') {
                 levelData[i][j] = ' ';
+            }
+            else if(levelData[i][j] == '$' || levelData[i][j] == '*') {
+                boxCount++;
             }
         }
         int missingSpaces = width - levelData[i].length();

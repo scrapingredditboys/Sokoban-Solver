@@ -1,7 +1,8 @@
 #include "include/fileReader.h"
 
-FileReader::FileReader(std::string _filename) {
-    filename = _filename;
+FileReader::FileReader(std::string &_filename)
+: filename(_filename) {
+
 }
 
 FileReader::~FileReader() {

@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 
+#include "include/astar.h"
 #include "include/fileReader.h"
 #include "include/level.h"
 #include "include/tests.h"
@@ -37,5 +38,17 @@ int main()
         std::vector<Level*> levels = fr.read();
 
         assertNumberOfLevels(levels, levelNumber[i]);
+    }
+
+    int file = 19; // Y. A. Auto
+
+    FileReader fr = FileReader(files[file]);
+    std::vector<Level*> levels = fr.read();
+
+    std::cout << "Solving Y. M. Auto levelset\n";
+    for(int level = 0; level < levelNumber[file]; level++) {
+        std::cout << "Level " << level + 1 << ": ";
+        AStar astar = AStar(*(levels[level]));
+        astar.start(30);
     }
 }

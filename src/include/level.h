@@ -12,12 +12,15 @@ class Level {
 
         int getWidth() { return width; }
         int getHeight() { return height; }
+        char *getBoard() { return board; }
+        int getBoxCount() { return boxCount; }
         void print();
 
     private:
         int width;
         int height;
-        char **board;
+        char *board;
+        int boxCount;
 
         int calculateWidth(std::vector<std::string> &levelData);
         int calculateHeight(std::vector<std::string> &levelData);
