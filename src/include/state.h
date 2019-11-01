@@ -5,7 +5,7 @@
 
 class State {
     public:
-        State(int *_boxes, int _player, int _g)
+        State(short *_boxes, short _player, short _g)
         : boxes(_boxes),
           player(_player),
           g(_g) {
@@ -15,10 +15,10 @@ class State {
             delete[] boxes;
         }
 
-        int *boxes;
-        int player;
-        int h;
-        int g;
+        short *boxes;
+        short player;
+        short h;
+        short g;
 };
 
 #endif // STATE_H_INCLUDED

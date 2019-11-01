@@ -14,6 +14,7 @@ class Level {
         int getHeight() { return height; }
         char *getBoard() { return board; }
         int getBoxCount() { return boxCount; }
+        int getSize() { return width * height; }
         void print();
 
     private:

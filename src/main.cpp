@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include <iostream>
 #include <string>
 
@@ -8,6 +9,8 @@
 
 int main()
 {
+    srand(42);
+
     std::string files[20] = {
         "test_suite/Aymeric_Du_Peloux_282.xsb",
         "test_suite/Grigr2001_100.xsb",
@@ -40,12 +43,12 @@ int main()
         assertNumberOfLevels(levels, levelNumber[i]);
     }
 
-    int file = 19; // Y. A. Auto
+    int file = 6;
 
     FileReader fr = FileReader(files[file]);
     std::vector<Level*> levels = fr.read();
 
-    std::cout << "Solving Y. M. Auto levelset\n";
+    std::cout << "Solving " << files[file] << "\n";
     for(int level = 0; level < levelNumber[file]; level++) {
         std::cout << "Level " << level + 1 << ": ";
         AStar astar = AStar(*(levels[level]));

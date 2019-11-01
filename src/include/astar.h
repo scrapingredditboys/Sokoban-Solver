@@ -9,6 +9,7 @@
 
 #include "level.h"
 #include "state.h"
+#include "transpositionTable.h"
 
 // In readlity, this is the IDA* approach, not A*
 
@@ -19,11 +20,15 @@ class AStar {
         void start(double timeLimit);
 
     private:
-        Level level;
+        Level &level;
+        TranspositionTable table;
         int *goals;
+        short **distanceToGoal;
 
         State* getInitialState();
         void calculateH(State &state);
+        bool initialCalculation(State &state);
+        void calculateDistanceToGoal(State &state);
         int** getBipartiteGraph(State &state);
         int getGoalIndex(int position);
         void playerBFS(bool *visited, State &state);
