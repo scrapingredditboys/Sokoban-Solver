@@ -7,6 +7,8 @@
 #include "include/level.h"
 #include "include/tests.h"
 
+void testHungarian();
+
 int main()
 {
     srand(42);
@@ -43,6 +45,8 @@ int main()
         assertNumberOfLevels(levels, levelNumber[i]);
     }
 
+    testHungarian();
+
     int file = 6;
 
     FileReader fr = FileReader(files[file]);
@@ -52,6 +56,42 @@ int main()
     for(int level = 0; level < levelNumber[file]; level++) {
         std::cout << "Level " << level + 1 << ": ";
         AStar astar = AStar(*(levels[level]));
-        astar.start(30);
+        astar.start(60);
     }
+}
+
+void testHungarian() {
+    int **graph1 = new int*[4];
+    for(int i = 0; i < 4; i++) {
+        graph1[i] = new int[4];
+    }
+    graph1[0][0] = 14; graph1[0][1] = 15; graph1[0][2] = 8; graph1[0][3] = 10;
+    graph1[1][0] = 11; graph1[1][1] = 12; graph1[1][2] = 5; graph1[1][3] = 7;
+    graph1[2][0] = 5; graph1[2][1] = 2; graph1[2][2] = 11; graph1[2][3] = 13;
+    graph1[3][0] = 4; graph1[3][1] = 5; graph1[3][2] = 10; graph1[3][3] = 0;
+
+    assertMinimumCostMatching(graph1, 4, 21);
+
+    for(int i = 0; i < 4; i++) {
+        delete[] graph1[i];
+    }
+    delete[] graph1;
+
+
+    int **graph2 = new int*[5];
+    for(int i = 0; i < 5; i++) {
+        graph2[i] = new int[5];
+    }
+    graph2[0][0] = 3; graph2[0][1] = 4; graph2[0][2] = -1; graph2[0][3] = -1; graph2[0][4] = -1;
+    graph2[1][0] = -1; graph2[1][1] = 2; graph2[1][2] = 4; graph2[1][3] = -1; graph2[1][4] = 5;
+    graph2[2][0] = 4; graph2[2][1] = -1; graph2[2][2] = -1; graph2[2][3] = 3; graph2[2][4] = -1;
+    graph2[3][0] = -1; graph2[3][1] = -1; graph2[3][2] = -1; graph2[3][3] = 3; graph2[3][4] = 4;
+    graph2[4][0] = -1; graph2[4][1] = -1; graph2[4][2] = -1; graph2[4][3] = 5; graph2[4][4] = 2;
+
+    assertMinimumCostMatching(graph2, 5, 17);
+
+    for(int i = 0; i < 5; i++) {
+        delete[] graph2[i];
+    }
+    delete[] graph2;
 }

@@ -12,3 +12,11 @@ void assertLevelSize(Level &level, int width, int height) {
                      "\n  Got: " << width << " x " << height << std::endl;
     }
 }
+
+void assertMinimumCostMatching(int **graph, int size, int expected) {
+    Hungarian h(size);
+    int result = h.solve(graph);
+    if(result != expected) {
+        std::cerr << "Invalid result!\n  Expected: " << expected << "\n  Got: " << result << std::endl;
+    }
+}

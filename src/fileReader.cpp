@@ -38,7 +38,7 @@ std::vector<Level*> FileReader::read() {
     return levels;
 }
 
-bool FileReader::isBoardRow(std::string row) {
+bool FileReader::isBoardRow(std::string &row) {
     if(row.length() == 0) {
         return false;
     }

@@ -21,11 +21,8 @@ void AStar::start(double timeLimit) {
     bool *visited = new bool[level.getSize()];
 
     State *initialState = getInitialState();
-    bool parity = initialCalculation(*initialState);
+    initialCalculation(*initialState);
     int initialLimit = initialState->h;
-    if((initialLimit % 2) != parity) {
-        initialLimit++;
-    }
     delete initialState;
 
     auto compare = [](const State *s1, const State *s2) { return s1->h < s2->h; };
@@ -60,21 +57,7 @@ void AStar::start(double timeLimit) {
             }
 
             // Check if the level is complete
-            bool levelWon = true;
-            for(int i = 0; i < level.getBoxCount(); i++) {
-                bool valid = false;
-                for(int j = 0; j < level.getBoxCount(); j++) {
-                    if(state->boxes[i] == goals[j]) {
-                        valid = true;
-                        break;
-                    }
-                }
-                if(!valid) {
-                    levelWon = false;
-                    break;
-                }
-            }
-            if(levelWon) {
+            if(isLevelWon(*state)) {
                 int pushes = state->g;
                 delete state;
                 while(!states.empty()) {
@@ -179,6 +162,17 @@ State* AStar::getInitialState() {
 
 void AStar::calculateH(State &state) {
     int **graph = getBipartiteGraph(state);
+
+    //state.h = closestGoalLowerbound(graph);
+    state.h = minimumCostMatchingLowerbound(graph);
+
+    for(int i = 0; i < level.getBoxCount(); i++) {
+        delete[] graph[i];
+    }
+    delete[] graph;
+}
+
+int AStar::closestGoalLowerbound(int **graph) {
     int sum = 0;
     bool deadlock = false;
 
@@ -200,7 +194,19 @@ void AStar::calculateH(State &state) {
         sum += min;
     }
 
-    state.h = deadlock ? -1 : sum;
+    return deadlock ? -1 : sum;
+}
+
+int AStar::minimumCostMatchingLowerbound(int **graph) {
+    Hungarian h(level.getBoxCount());
+    return h.solve(graph);
+}
+
+void AStar::initialCalculation(State &state) {
+    calculateDistanceToGoal(state);
+    int **graph = getBipartiteGraph(state);
+
+    state.h = minimumCostMatchingLowerbound(graph);
 
     for(int i = 0; i < level.getBoxCount(); i++) {
         delete[] graph[i];
@@ -208,42 +214,20 @@ void AStar::calculateH(State &state) {
     delete[] graph;
 }
 
-bool AStar::initialCalculation(State &state) {
-    calculateDistanceToGoal(state);
-    int **graph = getBipartiteGraph(state);
-    int sum = 0;
-    int parity = -1;
-
+bool AStar::isLevelWon(State &state) {
     for(int i = 0; i < level.getBoxCount(); i++) {
-        int min = 9999;
-        int max = -1;
-        int parityCheck = 0;
+        bool valid = false;
         for(int j = 0; j < level.getBoxCount(); j++) {
-            if(graph[i][j] < min && graph[i][j] >= 0) {
-                min = graph[i][j];
-            }
-            if(graph[i][j] > max) {
-                max = graph[i][j];
-            }
-            parityCheck += graph[(i + 1) % level.getBoxCount()][j];
-            if(graph[(i + 1) % level.getBoxCount()][j] == -1) {
-                parityCheck = -99999;
+            if(state.boxes[i] == goals[j]) {
+                valid = true;
+                break;
             }
         }
-        if(parity < 0) {
-            parity = parityCheck;
+        if(!valid) {
+            return false;
         }
-        sum += min;
     }
-
-    state.h = sum;
-
-    for(int i = 0; i < level.getBoxCount(); i++) {
-        delete[] graph[i];
-    }
-    delete[] graph;
-
-    return parity % 2;
+    return true;
 }
 
 void AStar::calculateDistanceToGoal(State &state) {
@@ -326,6 +310,15 @@ int AStar::getGoalIndex(int position) {
     return -1;
 }
 
+int AStar::getBoxIndex(State &state, short position) {
+    for(int i = 0; i < level.getBoxCount(); i++) {
+        if(state.boxes[i] == position) {
+            return i;
+        }
+    }
+    return -1;
+}
+
 void AStar::playerBFS(bool *visited, State &state) {
     char *board = level.getBoard();
     std::queue<int> positions;
@@ -357,4 +350,68 @@ void AStar::playerBFS(bool *visited, State &state) {
             }
         }
     }
+}
+
+// Failed ideas
+
+// The cost of computing this function almost always outweighs its benefits
+bool AStar::isDirectBoxDeadlock(State &state, bool *visited) {
+    char *board = level.getBoard();
+    int offset[4] = { -1, 1, -level.getWidth(), level.getWidth() };
+    bool hasMoves[level.getBoxCount()];
+    memset(&hasMoves, 0, sizeof(bool) * level.getBoxCount());
+
+    for(int i = 0; i < level.getBoxCount(); i++) {
+        int box = state.boxes[i];
+        for(int j = 0; j < 4; j++) {
+            if(visited[box - offset[j]] && board[box + offset[j]] != '#') {
+                bool valid = true;
+                for(int k = 0; k < level.getBoxCount(); k++) {
+                    if(state.boxes[k] == box + offset[j] || state.boxes[k] == box - offset[j]) {
+                        valid = false;
+                        break;
+                    }
+                }
+                if(valid) {
+                    hasMoves[i] = true;
+                    break;
+                }
+            }
+        }
+    }
+
+    for(int i = 0; i < level.getBoxCount(); i++) {
+        if(hasMoves[i] || getGoalIndex(state.boxes[i]) != -1) {
+            continue;
+        }
+
+        bool deadlock = true;
+        std::queue<short> boxes;
+        boxes.push(state.boxes[i]);
+        bool explored[level.getSize()];
+        memset(&explored, 0, sizeof(bool) * level.getSize());
+
+        while(!boxes.empty()) {
+            short position = boxes.front();
+            boxes.pop();
+            short box = getBoxIndex(state, position);
+            explored[position] = true;
+            if(box != -1 && hasMoves[getBoxIndex(state, position)]) {
+                deadlock = false;
+                break;
+            }
+
+            for(int j  = 0; j < 4; j++) {
+                short index = position + offset[j];
+                if(!explored[index] && !visited[index] && board[index] != '#') {
+                    boxes.push(index);
+                }
+            }
+        }
+
+        if(deadlock) {
+            return true;
+        }
+    }
+    return false;
 }

@@ -19,7 +19,7 @@ class FileReader {
         std::string filename;
         std::vector<Level*> levels;
 
-        bool isBoardRow(std::string row);
+        bool isBoardRow(std::string &row);
 
         const std::string BOARD_CHARS = "#@+$*. -_";
 };
