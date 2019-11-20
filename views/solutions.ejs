@@ -1,0 +1,35 @@
+
+<html lang="en">
+        <% include style/mainStyle %>
+        <% include style/table %>  
+        <% include style/importChunks %>  
+        <head>
+            <% include style/head %>
+        </head>
+    
+        <body>
+            All solutions:
+            <br />
+            <table>
+                <thead>
+                    <tr>
+                        <th>Level ID</th>
+                        <th>Level set name</th>
+                        <th>Solving method</th>
+                        <th>Time taken (in ms)</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody id="solutionsBody"></tbody>
+            </table>
+
+            <script>
+                    let solutions = <%- JSON.stringify(solutions) %>;
+                    let tableBody = document.getElementById("solutionsBody");
+                    console.log(solutions);
+                    solutions.forEach((solution, index) => {
+                        tableBody.innerHTML += '<tr><td><a href="/details?id='+ index + '">' + solution.levelIndex + '</a></td><td>' + solution.fileName + '</td><td>' + solution.method + '</td><td>' + solution.milisecondsTaken + '</td><td>' + solution.startDate + '</td></tr>';
+                    })
+            </script>
+        </body>
+    </html>

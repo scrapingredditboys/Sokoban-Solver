@@ -1,0 +1,15 @@
+
+<html lang="en">
+        <% include style/mainStyle %>  
+        <% include style/importChunks %>  
+        <head>
+            <% include style/head %>
+        </head>
+
+        <body>
+            Level <%= currentlySelected %> has been scheduled to be solved! Make sure to check back later to see if it was solved.
+            <form method="post" action="/root" enctype="multipart/form-data">
+                <input type="submit" value="Return back to the root">
+            </form>
+        </body>
+    </html>
