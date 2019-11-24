@@ -1,17 +1,12 @@
 #include "include/fileReader.h"
 
-FileReader::FileReader(std::string &_filename)
-: filename(_filename) {
-
-}
-
 FileReader::~FileReader() {
     for(int i = 0; i < levels.size(); i++) {
         delete levels[i];
     }
 }
 
-std::vector<Level*> FileReader::read() {
+std::vector<Level*> FileReader::readFromFile(std::string &filename) {
     std::ifstream file(filename);
     std::string row;
     std::vector<std::string> levelRows;
@@ -35,6 +30,19 @@ std::vector<Level*> FileReader::read() {
         levels.push_back(new Level(levelRows));
     }
 
+    return levels;
+}
+
+std::vector<Level*> FileReader::readFromString(std::string &str) {
+    std::vector<std::string> levelRows;
+    int pos  = 0;
+    while((pos = str.find("|")) != std::string::npos) {
+        levelRows.push_back(str.substr(0, pos));
+        str.erase(0, pos + 1);
+    }
+    levelRows.push_back(str);
+
+    levels.push_back(new Level(levelRows));
     return levels;
 }
 

@@ -13,9 +13,6 @@ int Hungarian::solve(int **graph) {
         }
     }
 
-
-
-
     if(!zeroRows(graph) || !zeroColumns(graph) || !maximizeLines(graph)) {
         for(int j = 0; j < size; j++) {
             delete[] originalGraph[j];
@@ -184,14 +181,11 @@ int* Hungarian::maximumMatching(int **graph) {
     int *matchToBox = new int[size];
     memset(matchToBox, -1, sizeof(int) * size);
 
-    int cardinality = 0;
-
     for(int i = 0; i < size; i++) {
         bool seen[size];
         memset(seen, 0, sizeof(bool) * size);
-        if(augmentPath(graph, i, seen, matchToBox)) {
-            cardinality++;
-        }
+        augmentPath(graph, i, seen, matchToBox);
+
     }
     return matchToBox;
 }

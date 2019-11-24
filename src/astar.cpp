@@ -44,8 +44,8 @@ void AStar::start(double timeLimit) {
             // Check if time limit is exceeded
             clock_t timeControl = clock();
             if( double(timeControl - start) / CLOCKS_PER_SEC >= timeLimit) {
-                std::cout << "  Unsolved after " << double(timeControl - start) / CLOCKS_PER_SEC << "s"
-                          << "   Explored nodes: " << count << std::endl;
+                /*std::cout << "  Unsolved after " << double(timeControl - start) / CLOCKS_PER_SEC << "s"
+                          << "   Explored nodes: " << count << std::endl;*/
                 delete state;
                 while(!states.empty()) {
                     state = states.top();
@@ -59,6 +59,7 @@ void AStar::start(double timeLimit) {
             // Check if the level is complete
             if(isLevelWon(*state)) {
                 int pushes = state->g;
+                std::cout << getLurd(state->history, state->g);
                 delete state;
                 while(!states.empty()) {
                     state = states.top();
@@ -67,8 +68,8 @@ void AStar::start(double timeLimit) {
                 }
                 delete[] visited;
                 clock_t end = clock();
-                std::cout << "  Solved in " << pushes << " pushes in " << double(end - start) / CLOCKS_PER_SEC << "s"
-                          << "   Explored nodes: " << count << std::endl;
+                /*std::cout << "  Solved in " << pushes << " pushes in " << double(end - start) / CLOCKS_PER_SEC << "s"
+                          << "   Explored nodes: " << count << std::endl;*/
                 return;
             }
 
@@ -117,7 +118,12 @@ void AStar::start(double timeLimit) {
                             short *newBoxes = new short[level.getBoxCount()];
                             memcpy(newBoxes, state->boxes, sizeof(short) * level.getBoxCount());
                             newBoxes[i] += offset[j];
-                            State *newState = new State(newBoxes, newBoxes[i] - offset[j], state->g + 1);
+
+                            int *newHistory = new int[state->g + 1];
+                            memcpy(newHistory, state->history, sizeof(int) * state->g);
+                            newHistory[state->g] = (box - offset[j]) + level.getSize() * j;
+
+                            State *newState = new State(newBoxes, newBoxes[i] - offset[j], state->g + 1, newHistory);
                             states.push(newState);
                         }
                     }
@@ -157,7 +163,7 @@ State* AStar::getInitialState() {
         }
     }
 
-    return new State(boxes, player, 0);
+    return new State(boxes, player, 0, nullptr);
 }
 
 void AStar::calculateH(State &state) {
@@ -246,11 +252,11 @@ void AStar::calculateDistanceToGoal(State &state) {
             distanceToGoal[i][j] = -1;
         }
 
-        std::queue<Node> nodes;
-        nodes.push(Node(i, 0));
+        std::queue<DistanceNode> nodes;
+        nodes.push(DistanceNode(i, 0));
 
         while(!nodes.empty()) {
-            Node node = nodes.front();
+            DistanceNode node = nodes.front();
             nodes.pop();
             int p = node.position;
             int d = node.distance;
@@ -263,20 +269,20 @@ void AStar::calculateDistanceToGoal(State &state) {
             if((p % width != 0) && (p % width != width - 1)) {
                 if((board[p - 1] != '#') && (board[p + 1] != '#')) {
                     if(!visited[p - 1]) {
-                        nodes.push(Node(p - 1, d + 1));
+                        nodes.push(DistanceNode(p - 1, d + 1));
                     }
                     if(!visited[p + 1]) {
-                        nodes.push(Node(p + 1, d + 1));
+                        nodes.push(DistanceNode(p + 1, d + 1));
                     }
                 }
             }
             if((p >= width) && (p < level.getSize() - width)) {
                 if((board[p - width] != '#') && (board[p + width] != '#')) {
                     if(!visited[p - width]) {
-                        nodes.push(Node(p - width, d + 1));
+                        nodes.push(DistanceNode(p - width, d + 1));
                     }
                     if(!visited[p + width]) {
-                        nodes.push(Node(p + width, d + 1));
+                        nodes.push(DistanceNode(p + width, d + 1));
                     }
                 }
             }
@@ -346,6 +352,71 @@ void AStar::playerBFS(bool *visited, State &state) {
                     if(p + offset[i] < state.player) {
                         state.player = p + offset[i];
                     }
+                }
+            }
+        }
+    }
+}
+
+std::string AStar::getLurd(int *history, int n) {
+    std::string lurd = "";
+    State *state = getInitialState();
+    int offset[4] = { -1, 1, -level.getWidth(), level.getWidth() };
+    char LURD[] = "LRUD";
+
+    for(int i = 0; i < n; i++) {
+        int j = 0;
+        int pos = history[i];
+        while(pos >= level.getSize()) {
+            pos -= level.getSize();
+            j++;
+        }
+        lurd += getPath(*state, pos);
+        lurd += LURD[j];
+        state->boxes[getBoxIndex(*state, pos + offset[j])] += offset[j];
+        state->player = pos + offset[j];
+    }
+
+    delete state;
+    return lurd;
+}
+
+std::string AStar::getPath(State &state, int to) {
+    char *board = level.getBoard();
+    std::queue<PathNode> positions;
+    positions.push(PathNode(state.player, ""));
+
+    int offset[4] = { -1, 1, -level.getWidth(), level.getWidth() };
+    char LURD[] = "lrud";
+
+    bool visited[level.getSize()];
+    memset(visited, 0, sizeof(bool) * level.getSize());
+
+    while(!positions.empty()) {
+        PathNode p = positions.front();
+        positions.pop();
+
+        if(visited[p.position]) {
+            continue;
+        }
+
+        visited[p.position] = true;
+
+        if(p.position == to) {
+            return p.path;
+        }
+
+        for(int i = 0; i < 4; i++) {
+            if(board[p.position + offset[i]] != '#') {
+                bool valid = true;
+                for(int j = 0; j < level.getBoxCount(); j++) {
+                    if(state.boxes[j] == p.position + offset[i]) {
+                        valid = false;
+                        break;
+                    }
+                }
+                if(valid) {
+                    positions.push(PathNode(p.position + offset[i], p.path + LURD[i]));
                 }
             }
         }

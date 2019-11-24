@@ -12,7 +12,7 @@
 #include "state.h"
 #include "transpositionTable.h"
 
-// In readlity, this is the IDA* approach, not A*
+// In reality, this is the IDA* approach, not A*
 
 class AStar {
     public:
@@ -37,14 +37,25 @@ class AStar {
         int getGoalIndex(int position);
         int getBoxIndex(State &state, short position);
         void playerBFS(bool *visited, State &state);
+        std::string getLurd(int *history, int n);
+        std::string getPath(State &state, int to);
 
-        struct Node {
-            Node(int _position, int _distance) {
+        struct DistanceNode {
+            DistanceNode(int _position, int _distance) {
                 position = _position;
                 distance = _distance;
             }
             int position;
             int distance;
+        };
+
+        struct PathNode {
+            PathNode(int _position, std::string _path) {
+                position = _position;
+                path = _path;
+            }
+            int position;
+            std::string path;
         };
 
         // Failed ideas

@@ -9,9 +9,19 @@
 
 void testHungarian();
 
-int main()
+int main(int argc, char **argv)
 {
     srand(42);
+
+    if(argc > 1) {
+        FileReader fr;
+        std::string str(argv[1]);
+        std::vector<Level*> levels = fr.readFromString(str);
+        AStar astar = AStar(*(levels[0]));
+        astar.start(60);
+
+        return 0;
+    }
 
     std::string files[20] = {
         "test_suite/Aymeric_Du_Peloux_282.xsb",
@@ -39,8 +49,8 @@ int main()
     int levelNumber[20] = { 282, 100, 40, 40, 81, 135, 155, 50, 50, 50, 50, 50, 50, 50, 107, 163, 1623, 90, 54, 52 };
 
     for(int i = 0; i < 20; i++) {
-        FileReader fr = FileReader(files[i]);
-        std::vector<Level*> levels = fr.read();
+        FileReader fr;
+        std::vector<Level*> levels = fr.readFromFile(files[i]);
 
         assertNumberOfLevels(levels, levelNumber[i]);
     }
@@ -49,15 +59,17 @@ int main()
 
     int file = 6;
 
-    FileReader fr = FileReader(files[file]);
-    std::vector<Level*> levels = fr.read();
+    FileReader fr;
+    std::vector<Level*> levels = fr.readFromFile(files[file]);
 
-    std::cout << "Solving " << files[file] << "\n";
-    for(int level = 0; level < levelNumber[file]; level++) {
-        std::cout << "Level " << level + 1 << ": ";
+    //std::cout << "Solving " << files[file] << "\n";
+    for(int level = 0; level < 1/*levelNumber[file]*/; level++) {
+        //std::cout << "Level " << level + 1 << ": ";
         AStar astar = AStar(*(levels[level]));
         astar.start(60);
     }
+
+    return 0;
 }
 
 void testHungarian() {

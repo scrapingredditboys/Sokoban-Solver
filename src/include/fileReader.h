@@ -10,13 +10,13 @@
 
 class FileReader {
     public:
-        FileReader(std::string &_filename);
+        //FileReader();
         ~FileReader();
 
-        std::vector<Level*> read();
+        std::vector<Level*> readFromFile(std::string &filename);
+        std::vector<Level*> readFromString(std::string &str);
 
     private:
-        std::string filename;
         std::vector<Level*> levels;
 
         bool isBoardRow(std::string &row);
