@@ -1,0 +1,18 @@
+
+<html lang="en">
+        <% include style/mainStyle %>  
+        <% include style/importChunks %>  
+        <head>
+            <% include style/head %>
+        </head>
+    
+        <body>
+            Sokoban multisolver by Kacper Leszczyński and Bartłomiej Szymański
+            <form method="get" action="/importFile" enctype="multipart/form-data">
+                <input type="submit" value="Import a file">
+            </form>
+            <form method="get" action="/viewSolutions" enctype="multipart/form-data">
+                <input type="submit" value="View currently existing solutions">
+            </form>
+        </body>
+    </html>

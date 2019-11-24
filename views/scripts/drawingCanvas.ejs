@@ -1,0 +1,66 @@
+drawCanvas = () => {
+    console.log('hi');
+    console.log(level);
+    let canvas = document.getElementById("levelPreview");
+    let ctx = canvas.getContext("2d");
+
+    //Drawing player
+    let player = level.board.indexOf("@");
+    if (player>-1) {
+        ctx.fillStyle = "#FF0000";
+        ctx.fillRect(canvas.width/2-16, canvas.height/2-16, 32, 32);
+    } else {
+        player = level.board.indexOf("+");
+        ctx.fillStyle = "#FF00FF";
+        ctx.fillRect(canvas.width/2-16, canvas.height/2-16, 32, 32);
+    }
+    
+    const playerX = Math.floor(player/level.width);
+    const playerY = player%level.width;
+    console.log(playerX + " " + playerY);
+    console.log(level.board);
+    ctx.strokeStyle = "black";
+    level.board.forEach((symbol, index) => {
+        console.log(symbol, index);
+        switch(symbol) {
+            case "#": {
+                //wall
+                ctx.fillStyle = "#000000";
+                ctx.fillRect(canvas.width/2-16-playerY*32+index%level.width*32, canvas.height/2-16-playerX*32+Math.floor(index/level.width)*32, 32, 32);
+                break;
+            }
+            case "*": {
+                //box on a goal
+                ctx.fillStyle = "#00007F";
+                ctx.fillRect(canvas.width/2-16-playerY*32+index%level.width*32, canvas.height/2-16-playerX*32+Math.floor(index/level.width)*32, 32, 32);
+
+                break;
+            }
+            case ".": {
+                //goal
+                ctx.fillStyle = "#0000FF";
+                ctx.fillRect(canvas.width/2-16-playerY*32+index%level.width*32, canvas.height/2-16-playerX*32+Math.floor(index/level.width)*32, 32, 32);
+                break;
+            }
+            case "$": {
+                //box
+                ctx.fillStyle = "#FFFF00";
+                ctx.rect(canvas.width/2-15-playerY*32+index%level.width*32, canvas.height/2-15-playerX*32+Math.floor(index/level.width)*32, 30, 30);
+                ctx.fill();
+                ctx.stroke();
+                break;
+            }
+            case " ":
+            case "_": 
+            case "-": {
+                //ground
+                ctx.fillStyle = "#4F4F4F";
+                ctx.fillRect(canvas.width/2-16-playerY*32+index%level.width*32, canvas.height/2-16-playerX*32+Math.floor(index/level.width)*32, 32, 32);
+                break;
+            }
+        }
+    })
+}
+window.onload = () => {
+    drawCanvas(); 
+}

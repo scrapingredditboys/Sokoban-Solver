@@ -1,0 +1,16 @@
+{
+  "name": "sokoban_frontend_and_server",
+  "version": "1.0.0",
+  "description": "A frontend and a server module for the Sokoban solver made as Warsaw University of Technology's engineering thesis",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Bartłomiej Szymański",
+  "license": "ISC",
+  "dependencies": {
+    "ejs": "^2.7.2",
+    "express": "^4.17.1",
+    "formidable": "^1.2.1"
+  }
+}

@@ -1,0 +1,32 @@
+
+<html lang="en">
+        <% include style/mainStyle %>
+        <% include style/table %>  
+        <% include style/importChunks %>  
+        <head>
+            <% include style/head %>
+        </head>
+    
+        <body>
+            Details of the current solution:
+            <br />
+            <div id="details"></div>
+            <canvas id="levelPreview" width="1280" height="720"></canvas>
+
+            <script>
+                let solution = <%- JSON.stringify(solution) %>;
+                let solutionDetails = document.getElementById("details");
+                details.innerHTML += "<span><span id='inb4info'>Name of the level set: </span>" + solution.fileName + "</span><br \>";
+                details.innerHTML += "<span><span id='inb4info'>Level ID in the dataset: </span>" + solution.levelIndex + "</span><br \>";
+                details.innerHTML += "<span><span id='inb4info'>Method used to solve the level: </span>" + solution.method + "</span><br \>";
+                details.innerHTML += "<span><span id='inb4info'>Additional arguments used: </span>" + solution.arguments.toString() + "</span><br \>";
+                details.innerHTML += "<span><span id='inb4info'>Solution string: </span>" + solution.solution + "</span><br \>";
+                details.innerHTML += "<span><span id='inb4info'>Pushes: </span>" + solution.solution.match(/[A-Z]/g).length + "</span><br \>";
+                details.innerHTML += "<span><span id='inb4info'>Moves taken: </span>" + solution.solution.length + "</span><br \>";
+                details.innerHTML += "<span><span id='inb4info'>Time taken to solve the level: </span>" + Math.round(solution.milisecondsTaken)/1000 + "s</span><br \>";
+                details.innerHTML += "<span><span id='inb4info'>Solving date: </span>" + solution.startDate + "</span><br \>";
+                let level = solution.level;
+                <% include scripts/drawingCanvas %>
+            </script>
+        </body>
+    </html>

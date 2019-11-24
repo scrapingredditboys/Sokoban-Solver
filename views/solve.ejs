@@ -1,0 +1,46 @@
+
+<html lang="en">
+        <% include style/mainStyle %>  
+        <% include style/importChunks %>  
+        <head>
+            <% include style/head %>
+        </head>
+    
+    
+    
+        <body>
+            <%= (fileName) ? fileName : '' %>
+            <% if(levelCount) { %> 
+    
+    
+                <br />
+                Total amount of levels: <%= levelCount %>
+                <form method="post" action="/select" enctype="multipart/form-data">
+                    Selected level: <input type="number" name="selectedLevel" min="1" max="<%= levelCount %>" value="<%= currentlySelected %>">
+                    <input type="submit" value="Select Level">
+                </form>
+    
+                <span><%= levelCount ? 'Level: ' + currentlySelected : '' %></span>
+                <br />
+                <canvas id="levelPreview" width="1280" height="720"></canvas>
+    
+                <form method="post" action="/solve" enctype="multipart/form-data">
+                    <input type="submit" value="Solve this level!">
+                </form>
+    
+                <script>
+                    let level = <%- JSON.stringify(level) %>;
+                    <% include scripts/drawingCanvas %>
+                </script>
+            <% } else { %>
+                <div id='uploader'>
+                    Upload an XSB file: <br />
+                
+                    <form method="post" action="/upload" enctype="multipart/form-data">
+                        <input type="file" name="fileToUpload">
+                        <input type="submit" value="Submit">
+                    </form>
+                </div>
+            <% } %>
+        </body>
+    </html>
