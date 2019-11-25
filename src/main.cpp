@@ -1,5 +1,5 @@
-#include <stdlib.h>
 #include <iostream>
+#include <stdlib.h>
 #include <string>
 
 #include "include/astar.h"
@@ -18,7 +18,15 @@ int main(int argc, char **argv)
         std::string str(argv[1]);
         std::vector<Level*> levels = fr.readFromString(str);
         AStar astar = AStar(*(levels[0]));
-        std::cout << astar.start(60);
+
+        double timeLimit = 60;
+        char *p;
+
+        if(argc > 2) {
+            timeLimit = strtol(argv[2], &p, 10)/1000.0;
+        }
+
+        std::cout << astar.start(timeLimit);
 
         return 0;
     }
