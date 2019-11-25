@@ -1,0 +1,42 @@
+<html lang="en">
+    <% include style/mainStyle %>  
+    <% include style/solve %>  
+    <% include style/playSokoban %>  
+    <% include style/importChunks %>  
+    <head>
+        <% include style/head %>
+    </head>
+
+    <body>
+        <div id="fileName"><%= (fileName) ? fileName : '' %></div> 
+        Total amount of levels: <%= levelCount %>
+        <form method="post" action="/playOtherLevel" enctype="multipart/form-data">
+            Selected level: <br/>
+            <input type="number" name="selectedLevel" min="1" max="<%= levelCount %>" value="<%= currentlySelected %>">
+            <input type="submit" value="Select Level">
+            <input type="button" value="Start over" onClick="resetLevel()">
+        </form>
+        <%= levelCount ? 'Level: ' + currentlySelected : '' %>
+        <br/>
+        <canvas id="levelPreview" width="1280" height="720"></canvas>
+        <div>Use keyboard keys (up, down, left, right) to advance through level.</div>
+        <div id="stepsDiv">Current steps: <div id="stepsList"></div></div>
+
+        <script>
+            let level = <%- JSON.stringify(level) %>;
+            let details = false;
+            let playSokoban = true;
+
+            <% include scripts/drawingCanvas %>
+            <% include scripts/calculatingOneStep %>
+            <% include scripts/keyboardSokoban %>
+
+            resetLevel = () => {
+                level = <%- JSON.stringify(level) %>;
+                ctx.clearRect(0,0,canvas.width,canvas.height);
+                drawCanvas();
+                stepsList.innerHTML = "";
+            }
+        </script>
+    </body>
+</html>

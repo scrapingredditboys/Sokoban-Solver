@@ -1,0 +1,51 @@
+let stepsList = document.getElementById('stepsList');
+
+document.addEventListener('keyup', (e) => {
+    let playerOnGround = level.board.indexOf("@")!=-1;
+    let player = playerOnGround ? level.board.indexOf("@") : level.board.indexOf("+");
+    let doStep = '';
+    if (e.code === "ArrowUp") {
+        if(player<level.width) return;
+        if(level.board[player-level.width]=="#") return;
+        else if(level.board[player-level.width]=="$" || level.board[player-level.width]=="*") {
+            if(player<level.width*2) return;
+            if(level.board[player-level.width*2]=="#" || level.board[player-level.width*2]=="$" || level.board[player-level.width*2]=="*") return;
+            doStep = "U";
+        }
+        else doStep = "u";
+    } else if (e.code === "ArrowDown") {
+        if(level.board.length-player<level.width) return;
+        if(level.board[player+level.width]=="#") return;
+        else if(level.board[player+level.width]=="$" || level.board[player+level.width]=="*") {
+            if(level.board.length-player<level.width*2) return;
+            if(level.board[player+level.width*2]=="#" || level.board[player+level.width*2]=="$" || level.board[player+level.width*2]=="*") return;
+            doStep = "D";
+        }
+        else doStep = "d";
+    } else if (e.code === "ArrowLeft") {
+        if(player-1<0) return;
+        if(level.board[player-1]=="#") return;
+        else if(level.board[player-1]=="$" || level.board[player-1]=="*") {
+            if(player-2<0) return;
+            if(level.board[player-2]=="#" || level.board[player-2]=="$" || level.board[player-2]=="*") return;
+            doStep = "L";
+        }
+        else doStep = "l";
+    } else if (e.code === "ArrowRight") {
+        if(player>level.board.length-1) return;
+        if(level.board[player+1]=="#") return;
+        else if(level.board[player+1]=="$" || level.board[player+1]=="*") {
+            if(player>level.board.length-2) return;
+            if(level.board[player+2]=="#" || level.board[player+2]=="$" || level.board[player+2]=="*") return;
+            doStep = "R";
+        }
+        else doStep = "r";
+    }
+
+    if(doStep) {
+        level.board = calculatingOneStep(doStep, level.board);
+        stepsList.innerHTML+=doStep;
+    }
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    drawCanvas();
+});

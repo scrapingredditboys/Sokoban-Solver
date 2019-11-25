@@ -1,0 +1,82 @@
+loadImage = (url) => new Promise(r => { let i = new Image(); i.onload = (() => r(i)); i.src = url; });
+
+let box;
+let boxGoal;
+let floor;
+let goal;
+let playerGoal;
+let playerIcon;
+let wall; 
+
+let zoomInIcon;
+let zoomOutIcon;
+
+let focusPlayerIcon;
+let focusCenterIcon;
+
+let cameraUpIcon;
+let cameraDownIcon;
+let cameraLeftIcon;
+let cameraRightIcon;
+
+let speedUpIcon;
+let slowDownIcon;
+
+let runPauseIcon;
+
+loadAllImages = () => {
+    box = loadImage("views/gfx/mapIcons/box.png");
+    boxGoal = loadImage("views/gfx/mapIcons/box_goal.png");
+    floor = loadImage("views/gfx/mapIcons/floor.png");
+    goal = loadImage("views/gfx/mapIcons/goal.png");
+    playerGoal = loadImage("views/gfx/mapIcons/player_goal.png");
+    playerIcon = loadImage("views/gfx/mapIcons/player.png");
+    wall = loadImage("views/gfx/mapIcons/wall.png");
+
+    zoomInIcon = loadImage("views/gfx/menu/zoom_in.png");
+    zoomOutIcon = loadImage("views/gfx/menu/zoom_out.png");
+
+    focusPlayerIcon = loadImage("views/gfx/menu/focus_player.png");
+    focusCenterIcon = loadImage("views/gfx/menu/focus_center.png");
+
+    cameraUpIcon = loadImage("views/gfx/menu/up_arrow.png");
+    cameraDownIcon = loadImage("views/gfx/menu/down_arrow.png");
+    cameraLeftIcon = loadImage("views/gfx/menu/left_arrow.png");
+    cameraRightIcon = loadImage("views/gfx/menu/right_arrow.png");
+
+    speedUpIcon = loadImage("views/gfx/menu/increase.png");
+    slowDownIcon = loadImage("views/gfx/menu/decrease.png");
+
+    runPauseIcon = loadImage("views/gfx/menu/run_pause.png");
+
+    Promise.all([box, boxGoal, floor, goal, playerGoal, playerIcon, wall, zoomInIcon, zoomOutIcon, focusPlayerIcon, focusCenterIcon, cameraUpIcon, cameraDownIcon, cameraLeftIcon, cameraRightIcon, speedUpIcon, slowDownIcon, runPauseIcon]).then((values) => {
+        box = values[0];
+        boxGoal = values[1];
+        floor = values[2];
+        goal = values[3];
+        playerGoal = values[4];
+        playerIcon = values[5];
+        wall = values[6];
+
+        zoomInIcon = values[7];
+        zoomOutIcon = values[8];
+
+        focusPlayerIcon = values[9];
+        focusCenterIcon = values[10];
+
+        cameraUpIcon = values[11];
+        cameraDownIcon = values[12];
+        cameraLeftIcon = values[13];
+        cameraRightIcon = values[14];
+
+        speedUpIcon = values[15];
+        slowDownIcon = values[16];
+
+        runPauseIcon = values[17];
+
+        initMenu();
+        drawCanvas();
+    });
+}
+
+loadAllImages();

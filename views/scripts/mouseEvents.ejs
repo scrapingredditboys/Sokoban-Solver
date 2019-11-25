@@ -1,0 +1,31 @@
+canvas.addEventListener('click', event => {
+    let xVal = event.pageX - canvas.offsetLeft;
+    let yVal = event.pageY - canvas.offsetTop;
+
+    menuElements.some(element => {
+        if (yVal > element.top && yVal < element.top + element.height
+            && xVal > element.left && xVal < element.left + element.width) {
+                element.fcn();
+                ctx.clearRect(0,0,canvas.width,canvas.height);
+                drawCanvas();
+                return;
+        }
+    })
+ }, false);
+
+canvas.addEventListener('mousemove', event => {
+    let xVal = event.pageX - canvas.offsetLeft;
+    let yVal = event.pageY - canvas.offsetTop;
+    console.log(xVal + " " + yVal);
+
+    let boundingBox = false;
+    menuElements.some(element => {
+        if (yVal > element.top && yVal < element.top + element.height
+            && xVal > element.left && xVal < element.left + element.width) {
+                canvas.style.cursor = 'pointer';
+                boundingBox = true;
+                return;
+        }
+    })
+    if (!boundingBox) canvas.style.cursor = 'default';
+ }, false);

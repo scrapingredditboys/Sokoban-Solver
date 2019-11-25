@@ -44,20 +44,7 @@
 
             <script>
                 let solutions = <%- JSON.stringify(solutions) %>;
-                displaySolutions = () => {
-                    let tableBody = document.getElementById("solutionsBody");
-                    tableBody.innerHTML = null;
-                    console.log(solutions);
-                    solutions.forEach((solution, index) => {
-                        let pushes = solution.solution.length ? solution.solution.match(/[A-Z]/g).length : 0;
-                        let methodName = solution.method=='JSoko' ? solution.method + ' (' + solution.arguments + ')' : solution.method;
-                        if (pushes || !skip)
-                            tableBody.innerHTML += '<tr><td><a href="/details?id='+ index + '">' + solution.levelIndex + '</a></td><td>' 
-                                + solution.fileName + '</td><td>' + methodName + '</td><td>' + solution.milisecondsTaken + '</td><td>' 
-                                    + solution.solution.length + '</td><td>' + pushes + '</td><td>' + solution.startDate + '</td><td>' + Boolean(solution.solution.length) + '</td</tr>' ;
-                    })
-                }
-                displaySolutions();
+                <% include scripts/populateSolutionsTable %>  
             </script>
         </body>
     </html>

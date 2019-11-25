@@ -1,0 +1,19 @@
+
+<html lang="en">
+    <% include style/mainStyle %>  
+    <% include style/importChunks %>  
+    <% include style/solve %>  
+    <head>
+        <% include style/head %>
+    </head>
+
+    <body>
+        <div id='uploader'>
+            Upload an XSB file: <br />     
+            <form method="post" action="/playLevel" enctype="multipart/form-data">
+                <input type="file" name="fileToUpload">
+                <input type="submit" value="Submit">
+            </form>
+        </div>
+    </body>
+</html>

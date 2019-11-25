@@ -23,7 +23,7 @@ let playerY;
 let centerX;
 let centerY;
 
-let focusMode = details ? 0 : 1;
+let focusMode = details || playSokoban ? 0 : 1;
 
 let cameraPositionOffsetX = 0;
 let cameraPositionOffsetY = 0;
@@ -46,6 +46,11 @@ let solutionRunning = false;
 solveClickFcn = () => solutionRunning ? haltSolveFcn() : solveFcn();
 
 let currentTimeout;
+
+let allBoardStates = [];
+
+<% include updateCurrentStep %>
+
 solveFcn = () => {
     if (document.getElementById("currentStep").value!=document.getElementById("currentStep").max) {
         solutionRunning = true;
@@ -63,167 +68,9 @@ haltSolveFcn = () => {
     clearTimeout(currentTimeout);
 }
 
-let menuElements = [];
-
-initMenu = () => {
-    let zoomIn = new MenuElement(10, 40, 32, 32, zoomInFcn, zoomInIcon);
-    let zoomOut = new MenuElement(10+40, 40, 32, 32, zoomOutFcn, zoomOutIcon);
-
-    let focusPlayer = new MenuElement(10, canvas.height-40, 32, 32, focusPlayerFcn, focusPlayerIcon);
-    let focusCenter = new MenuElement(10+40, canvas.height-40, 32, 32, focusCenterFcn, focusCenterIcon);
-
-    let cameraUp = new MenuElement(canvas.width-32-40-10, canvas.height-40-40, 32, 32, cameraUpFcn, cameraUpIcon);
-    let cameraDown = new MenuElement(canvas.width-32-40-10, canvas.height-40, 32, 32, cameraDownFcn, cameraDownIcon);
-    let cameraLeft = new MenuElement(canvas.width-32-40-40-10, canvas.height-40, 32, 32, cameraLeftFcn, cameraLeftIcon);
-    let cameraRight = new MenuElement(canvas.width-32-10, canvas.height-40, 32, 32, cameraRightFcn, cameraRightIcon);
-
-    let speedUp = new MenuElement(canvas.width-32-10, 40, 32, 32, speedUpFcn, speedUpIcon);
-    let slowDown = new MenuElement(canvas.width-32-40-10, 40, 32, 32, slowDownFcn, slowDownIcon);
-
-    let solveButton = new MenuElement(canvas.width-128-10, 40+40, 128, 32, solveClickFcn, runPauseIcon);
-
-    menuElements.push(zoomIn);
-    menuElements.push(zoomOut);
-
-    if (details) {
-        menuElements.push(focusPlayer);
-        menuElements.push(focusCenter);
-
-        menuElements.push(speedUp);
-        menuElements.push(slowDown);
-        menuElements.push(solveButton);
-    }
-    
-    menuElements.push(cameraUp);
-    menuElements.push(cameraDown);
-    menuElements.push(cameraLeft);
-    menuElements.push(cameraRight); 
-}
-
-canvas.addEventListener('click', event => {
-    let xVal = event.pageX - canvas.offsetLeft;
-    let yVal = event.pageY - canvas.offsetTop;
-
-    menuElements.some(element => {
-        if (yVal > element.top && yVal < element.top + element.height
-            && xVal > element.left && xVal < element.left + element.width) {
-                element.fcn();
-                ctx.clearRect(0,0,canvas.width,canvas.height);
-                drawCanvas();
-                return;
-        }
-    })
- }, false);
-
-canvas.addEventListener('mousemove', event => {
-    let xVal = event.pageX - canvas.offsetLeft;
-    let yVal = event.pageY - canvas.offsetTop;
-    console.log(xVal + " " + yVal);
-
-    let boundingBox = false;
-    menuElements.some(element => {
-        if (yVal > element.top && yVal < element.top + element.height
-            && xVal > element.left && xVal < element.left + element.width) {
-                canvas.style.cursor = 'pointer';
-                boundingBox = true;
-                return;
-        }
-    })
-    if (!boundingBox) canvas.style.cursor = 'default';
- }, false);
-
-
-drawMenuButtons = () => {
-    menuElements.forEach(element => {
-        if (focusMode || element.image!=cameraUpIcon && element.image!=cameraDownIcon && element.image!=cameraLeftIcon && element.image!=cameraRightIcon) {
-            ctx.drawImage(element.image, element.left, element.top, element.width, element.height);
-            ctx.lineWidth = 2;
-            ctx.strokeStyle = 'black';
-            ctx.strokeRect(element.left-1, element.top-1, element.width+2, element.height+2);
-        }
-    })
-}
-
-loadImage = (url) => new Promise(r => { let i = new Image(); i.onload = (() => r(i)); i.src = url; });
-
-let box;
-let boxGoal;
-let floor;
-let goal;
-let playerGoal;
-let playerIcon;
-let wall; 
-
-let zoomInIcon;
-let zoomOutIcon;
-
-let focusPlayerIcon;
-let focusCenterIcon;
-
-let cameraUpIcon;
-let cameraDownIcon;
-let cameraLeftIcon;
-let cameraRightIcon;
-
-let speedUpIcon;
-let slowDownIcon;
-
-let runPauseIcon;
-
-loadAllImages = () => {
-    box = loadImage("views/gfx/mapIcons/box.png");
-    boxGoal = loadImage("views/gfx/mapIcons/box_goal.png");
-    floor = loadImage("views/gfx/mapIcons/floor.png");
-    goal = loadImage("views/gfx/mapIcons/goal.png");
-    playerGoal = loadImage("views/gfx/mapIcons/player_goal.png");
-    playerIcon = loadImage("views/gfx/mapIcons/player.png");
-    wall = loadImage("views/gfx/mapIcons/wall.png");
-
-    zoomInIcon = loadImage("views/gfx/menu/zoom_in.png");
-    zoomOutIcon = loadImage("views/gfx/menu/zoom_out.png");
-
-    focusPlayerIcon = loadImage("views/gfx/menu/focus_player.png");
-    focusCenterIcon = loadImage("views/gfx/menu/focus_center.png");
-
-    cameraUpIcon = loadImage("views/gfx/menu/up_arrow.png");
-    cameraDownIcon = loadImage("views/gfx/menu/down_arrow.png");
-    cameraLeftIcon = loadImage("views/gfx/menu/left_arrow.png");
-    cameraRightIcon = loadImage("views/gfx/menu/right_arrow.png");
-
-    speedUpIcon = loadImage("views/gfx/menu/increase.png");
-    slowDownIcon = loadImage("views/gfx/menu/decrease.png");
-
-    runPauseIcon = loadImage("views/gfx/menu/run_pause.png");
-
-    Promise.all([box, boxGoal, floor, goal, playerGoal, playerIcon, wall, zoomInIcon, zoomOutIcon, focusPlayerIcon, focusCenterIcon, cameraUpIcon, cameraDownIcon, cameraLeftIcon, cameraRightIcon, speedUpIcon, slowDownIcon, runPauseIcon]).then((values) => {
-        box = values[0];
-        boxGoal = values[1];
-        floor = values[2];
-        goal = values[3];
-        playerGoal = values[4];
-        playerIcon = values[5];
-        wall = values[6];
-
-        zoomInIcon = values[7];
-        zoomOutIcon = values[8];
-
-        focusPlayerIcon = values[9];
-        focusCenterIcon = values[10];
-
-        cameraUpIcon = values[11];
-        cameraDownIcon = values[12];
-        cameraLeftIcon = values[13];
-        cameraRightIcon = values[14];
-
-        speedUpIcon = values[15];
-        slowDownIcon = values[16];
-
-        runPauseIcon = values[17];
-
-        initMenu();
-        drawCanvas();
-    });
-}
+<% include mouseEvents %>
+<% include loadingImages %>
+<% include menu %>
 
 drawCanvas = () => {
     console.log(level);
@@ -292,8 +139,9 @@ drawCanvas = () => {
     //Drawing menu
     ctx.font = "20px Alata";
     ctx.fillText("Zoom: ", 10, 30);
-    if (details) {
+    if (details || playSokoban) {
         ctx.fillText("Focus: ", 10, canvas.height-50);
+    } if (details) {
         ctx.fillText("Running speed: ", canvas.width-150, 30);
         ctx.fillText(
             (solution.solution[document.getElementById("currentStep").value-1] 
@@ -309,5 +157,3 @@ drawCanvas = () => {
     drawMenuButtons();
 
 }
-
-loadAllImages();
