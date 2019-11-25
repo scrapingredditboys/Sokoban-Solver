@@ -14,7 +14,7 @@ AStar::~AStar() {
     delete[] distanceToGoal;
 }
 
-void AStar::start(double timeLimit) {
+std::string AStar::start(double timeLimit) {
     clock_t start = clock();
     int offset[4] = { -1, 1, -level.getWidth(), level.getWidth() };
     char *board = level.getBoard();
@@ -53,13 +53,13 @@ void AStar::start(double timeLimit) {
                     states.pop();
                 }
                 delete[] visited;
-                return;
+                return "";
             }
 
             // Check if the level is complete
             if(isLevelWon(*state)) {
                 int pushes = state->g;
-                std::cout << getLurd(state->history, state->g);
+                std::string lurd = getLurd(state->history, state->g);
                 delete state;
                 while(!states.empty()) {
                     state = states.top();
@@ -70,7 +70,7 @@ void AStar::start(double timeLimit) {
                 clock_t end = clock();
                 /*std::cout << "  Solved in " << pushes << " pushes in " << double(end - start) / CLOCKS_PER_SEC << "s"
                           << "   Explored nodes: " << count << std::endl;*/
-                return;
+                return lurd;
             }
 
             // Calculate all reachable squares by player without pushing boxes
@@ -132,6 +132,7 @@ void AStar::start(double timeLimit) {
             delete state;
         }
     }
+    return "";
 }
 
 State* AStar::getInitialState() {
