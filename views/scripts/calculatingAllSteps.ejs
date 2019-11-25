@@ -1,0 +1,58 @@
+let allBoardStates = [];
+
+calculatingAllSteps = () => {
+    allBoardStates.push([...level.board]);
+    [...solutionString].forEach(c => {
+        let newBoard = [...allBoardStates[allBoardStates.length-1]];
+
+        let playerPositionEmptyBoard = newBoard.indexOf('@');
+        let playerPositionGoal = newBoard.indexOf('+');
+
+        let shiftOffset = -1;
+        let boxShiftOffset = -1;
+
+        let boxShift = false;
+        switch(c) {
+            case 'L':
+                boxShift = true;
+            case 'l':
+                shiftOffset = playerPositionEmptyBoard != -1 ? playerPositionEmptyBoard - 1 : playerPositionGoal - 1;
+                boxShift && (boxShiftOffset = shiftOffset - 1);
+                break;
+            case 'U':
+                boxShift = true;
+            case 'u': 
+                shiftOffset = playerPositionEmptyBoard != -1 ? playerPositionEmptyBoard - level.width : playerPositionGoal - level.width;
+                boxShift && (boxShiftOffset = shiftOffset - level.width);
+                break;
+            case 'R':
+                boxShift = true;
+            case 'r':
+                shiftOffset = playerPositionEmptyBoard != -1 ? playerPositionEmptyBoard + 1 : playerPositionGoal + 1;
+                boxShift && (boxShiftOffset = shiftOffset + 1);
+                break;
+            case 'D':
+                boxShift = true;
+            case 'd':
+                shiftOffset = playerPositionEmptyBoard != -1 ? playerPositionEmptyBoard + level.width : playerPositionGoal + level.width;
+                boxShift && (boxShiftOffset = shiftOffset + level.width);
+                break;
+        }
+
+        newBoard[playerPositionEmptyBoard != -1 ? playerPositionEmptyBoard : playerPositionGoal] = playerPositionEmptyBoard != -1 ? ' ' : '.';
+        if (newBoard[shiftOffset] == ' ')
+            newBoard[shiftOffset] = '@';
+        else if (newBoard[shiftOffset] == '.')
+            newBoard[shiftOffset] = '+';
+        else if (newBoard[shiftOffset] == '$' || newBoard[shiftOffset] == '*') {
+            newBoard[shiftOffset] = newBoard[shiftOffset] == '$' ? '@' : '+';
+            if (newBoard[boxShiftOffset] == ' ')
+                newBoard[boxShiftOffset] = '$';
+            else if (newBoard[boxShiftOffset] == '.')
+                newBoard[boxShiftOffset] = '*';
+        }  
+        allBoardStates.push(newBoard);        
+    })
+}
+
+calculatingAllSteps();

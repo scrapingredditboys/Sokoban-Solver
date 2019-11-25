@@ -1,0 +1,6 @@
+updateCurrentStep = (val) => {
+    document.getElementById("currentStepNumber").innerHTML = val;
+    level.board = [...allBoardStates[val]];
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    drawCanvas();
+}

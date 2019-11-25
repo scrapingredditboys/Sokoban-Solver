@@ -23,9 +23,45 @@ app.get('/importFile',function(req,res){
 });
 
 let solutions;
-
+let sortingDesc = false;
 app.get('/viewSolutions',function(req,res){
     solutions = JSON.parse(fs.readFileSync("solutions/log.json"));
+    if (req.query.sortingMethod) {
+        switch (req.query.sortingMethod) {
+            case 'id':
+                solutions.sort((a, b) => parseInt(a.levelIndex) - parseInt(b.levelIndex));
+                break;
+            case 'name':
+                solutions.sort((a, b) => a.fileName.localeCompare(b.fileName));
+                break;
+            case 'method':
+                solutions.sort((a, b) => a.method.localeCompare(b.method));
+                break;
+            case 'time':
+                solutions.sort((a, b) => parseInt(a.milisecondsTaken) - parseInt(b.milisecondsTaken));
+                break;
+            case 'move':
+                solutions.sort((a, b) => parseInt(a.solution.length) - parseInt(b.solution.length));
+                break;
+            case 'push':
+                solutions.sort((a, b) => parseInt(a.solution.match(/[A-Z]/g).length) - parseInt(b.solution.match(/[A-Z]/g).length));
+                break;
+            case 'date':
+                solutions.sort((a, b) => Date.parse(a.startDate)- Date.parse(b.startDate));
+                break;
+            case 'solved':
+                solutions.sort((a, b) => Boolean(a.solution.length)- Boolean(b.solution.length));
+                break;
+        }
+        if(sortingDesc)
+        {
+            sortingDesc=false;
+        } else {
+            sortingDesc=true;
+            solutions.reverse(); 
+        }
+    }
+
     res.render('solutions', {solutions});
 });
 
@@ -39,7 +75,7 @@ app.post('/solve', function(req, res){
           console.error('Error', err)
           throw err;
         }
-        doingTheSolvingWork(fields.method);
+        doingTheSolvingWork(fields.method, fields.methodSub, fields.methodTimeout);
         res.render('scheduledToSolve', {
             currentlySelected: currentIndex, 
         });
@@ -98,27 +134,30 @@ app.use(express.static(__dirname + '/'));
 // Parse JSON bodies (as sent by API clients)
 app.use(express.json());
 
-const doingTheSolvingWork = async(method) => {
+const doingTheSolvingWork = async(method, methodSub, timeout) => {
     const levelString = levels.levelsArray[currentIndex-1].board.join('').match(new RegExp('.{1,' + levels.levelsArray[currentIndex-1].width + '}', 'g')).join('|');
-    let argumentsArray = [];
     let execString;
     switch(method) {
         case 'JSoko':
-            execString = 'java -jar solvers\\JSokoSolver.jar "' + levelString + '"';
+            execString = 'java -jar solvers\\JSokoSolver.jar "' + levelString + '" ' + methodSub + " " + timeout*1000;
+            break;
         case 'Kacper':
-            execString = 'solvers\\sokosolver.exe "' + levelString + '"'
+            execString = 'solvers\\sokosolver.exe "' + levelString + '" ' + timeout*1000;
+            break;
     }
+    console.log(execString);
+    const fileJSON = JSON.parse(fs.readFileSync("solutions/log.json"));
     let time = new Date();
     exec(execString, function callback(error, stdout, stderr){
-        const fileJSON = JSON.parse(fs.readFileSync("solutions/log.json"));
+        let timeFinal = Date.now() - time;
         let solution = {
             fileName,
             levelIndex: currentIndex,
             level: levels.levelsArray[currentIndex-1],
             method: method,
-            arguments: argumentsArray,
-            solution: stdout,
-            milisecondsTaken: Date.now() - time,
+            arguments: method!="Kacper" && methodSub,
+            solution: stdout.trim(),
+            milisecondsTaken: timeFinal,
             startDate: time.toLocaleString('en-GB', { timeZone: 'UTC' }),
         }
         

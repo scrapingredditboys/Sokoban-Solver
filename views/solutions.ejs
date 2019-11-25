@@ -8,28 +8,56 @@
         </head>
     
         <body>
-            All solutions:
+            <script> 
+                let skip = false;
+                skipFcn = () => {
+                    skip = !skip;
+                    displaySolutions();
+                }
+
+                sortBy = (column) => window.location.href = "?sortingMethod=" + column;
+            </script>
+            <div id="rangeInputContainer">
+                Solutions:
+            </div>
+            <br />
+            You can click on any of the table headers to sort table by a given category.
+            <br />
+            <input type="checkbox" onClick="skipFcn()">Display only solved levels<br>
+
             <br />
             <table>
                 <thead>
                     <tr>
-                        <th>Level ID</th>
-                        <th>Level set name</th>
-                        <th>Solving method</th>
-                        <th>Time taken (in ms)</th>
-                        <th>Date</th>
+                        <th onclick="sortBy('id')">Level ID</th>
+                        <th onclick="sortBy('name')">Level set name</th>
+                        <th onclick="sortBy('method')">Solving method</th>
+                        <th onclick="sortBy('time')">Time taken (in ms)</th>
+                        <th onclick="sortBy('move')">Moves</th>
+                        <th onclick="sortBy('push')">Pushes</th>
+                        <th onclick="sortBy('date')">Date</th>
+                        <th onclick="sortBy('solved')">Solved?</th>
                     </tr>
                 </thead>
                 <tbody id="solutionsBody"></tbody>
             </table>
 
             <script>
-                    let solutions = <%- JSON.stringify(solutions) %>;
+                let solutions = <%- JSON.stringify(solutions) %>;
+                displaySolutions = () => {
                     let tableBody = document.getElementById("solutionsBody");
+                    tableBody.innerHTML = null;
                     console.log(solutions);
                     solutions.forEach((solution, index) => {
-                        tableBody.innerHTML += '<tr><td><a href="/details?id='+ index + '">' + solution.levelIndex + '</a></td><td>' + solution.fileName + '</td><td>' + solution.method + '</td><td>' + solution.milisecondsTaken + '</td><td>' + solution.startDate + '</td></tr>';
+                        let pushes = solution.solution.length ? solution.solution.match(/[A-Z]/g).length : 0;
+                        let methodName = solution.method=='JSoko' ? solution.method + ' (' + solution.arguments + ')' : solution.method;
+                        if (pushes || !skip)
+                            tableBody.innerHTML += '<tr><td><a href="/details?id='+ index + '">' + solution.levelIndex + '</a></td><td>' 
+                                + solution.fileName + '</td><td>' + methodName + '</td><td>' + solution.milisecondsTaken + '</td><td>' 
+                                    + solution.solution.length + '</td><td>' + pushes + '</td><td>' + solution.startDate + '</td><td>' + Boolean(solution.solution.length) + '</td</tr>' ;
                     })
+                }
+                displaySolutions();
             </script>
         </body>
     </html>

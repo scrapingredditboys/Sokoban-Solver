@@ -1,66 +1,313 @@
-drawCanvas = () => {
-    console.log('hi');
-    console.log(level);
-    let canvas = document.getElementById("levelPreview");
-    let ctx = canvas.getContext("2d");
+let canvas = document.getElementById("levelPreview");
+let ctx = canvas.getContext("2d");
 
-    //Drawing player
-    let player = level.board.indexOf("@");
-    if (player>-1) {
-        ctx.fillStyle = "#FF0000";
-        ctx.fillRect(canvas.width/2-16, canvas.height/2-16, 32, 32);
-    } else {
-        player = level.board.indexOf("+");
-        ctx.fillStyle = "#FF00FF";
-        ctx.fillRect(canvas.width/2-16, canvas.height/2-16, 32, 32);
+class MenuElement {
+    constructor(left, top, width, height, callback, image) {
+        this.left = left;
+        this.top = top;
+        this.width = width;
+        this.height = height;
+        this.fcn = callback;
+        this.image = image;
+    }
+}
+
+let currentSize = 32;
+
+zoomInFcn = () => currentSize<=128 && (currentSize *= 2);
+zoomOutFcn = () => currentSize>=8 && (currentSize /= 2);
+
+let playerX;
+let playerY;
+
+let centerX;
+let centerY;
+
+let focusMode = details ? 0 : 1;
+
+let cameraPositionOffsetX = 0;
+let cameraPositionOffsetY = 0;
+
+focusPlayerFcn = () => focusMode = 0;
+focusCenterFcn = () => focusMode = 1;
+
+cameraRightFcn = () => cameraPositionOffsetX++;
+cameraLeftFcn = () => cameraPositionOffsetX--;
+cameraDownFcn = () => cameraPositionOffsetY++;
+cameraUpFcn = () => cameraPositionOffsetY--;
+
+let currentSolvingSpeed = 15;
+
+speedUpFcn = () => currentSolvingSpeed<30 && currentSolvingSpeed++;
+slowDownFcn = () => currentSolvingSpeed>0 && currentSolvingSpeed--;
+
+let solutionRunning = false;
+
+solveClickFcn = () => solutionRunning ? haltSolveFcn() : solveFcn();
+
+let currentTimeout;
+solveFcn = () => {
+    if (document.getElementById("currentStep").value!=document.getElementById("currentStep").max) {
+        solutionRunning = true;
+        currentTimeout = setTimeout(solveFcn, (30-currentSolvingSpeed)*30);
+    }
+    else {
+        solutionRunning = false;
+        return;
+    }
+    updateCurrentStep(++document.getElementById("currentStep").value)
+}
+
+haltSolveFcn = () => {
+    solutionRunning = false;
+    clearTimeout(currentTimeout);
+}
+
+let menuElements = [];
+
+initMenu = () => {
+    let zoomIn = new MenuElement(10, 40, 32, 32, zoomInFcn, zoomInIcon);
+    let zoomOut = new MenuElement(10+40, 40, 32, 32, zoomOutFcn, zoomOutIcon);
+
+    let focusPlayer = new MenuElement(10, canvas.height-40, 32, 32, focusPlayerFcn, focusPlayerIcon);
+    let focusCenter = new MenuElement(10+40, canvas.height-40, 32, 32, focusCenterFcn, focusCenterIcon);
+
+    let cameraUp = new MenuElement(canvas.width-32-40-10, canvas.height-40-40, 32, 32, cameraUpFcn, cameraUpIcon);
+    let cameraDown = new MenuElement(canvas.width-32-40-10, canvas.height-40, 32, 32, cameraDownFcn, cameraDownIcon);
+    let cameraLeft = new MenuElement(canvas.width-32-40-40-10, canvas.height-40, 32, 32, cameraLeftFcn, cameraLeftIcon);
+    let cameraRight = new MenuElement(canvas.width-32-10, canvas.height-40, 32, 32, cameraRightFcn, cameraRightIcon);
+
+    let speedUp = new MenuElement(canvas.width-32-10, 40, 32, 32, speedUpFcn, speedUpIcon);
+    let slowDown = new MenuElement(canvas.width-32-40-10, 40, 32, 32, slowDownFcn, slowDownIcon);
+
+    let solveButton = new MenuElement(canvas.width-128-10, 40+40, 128, 32, solveClickFcn, runPauseIcon);
+
+    menuElements.push(zoomIn);
+    menuElements.push(zoomOut);
+
+    if (details) {
+        menuElements.push(focusPlayer);
+        menuElements.push(focusCenter);
+
+        menuElements.push(speedUp);
+        menuElements.push(slowDown);
+        menuElements.push(solveButton);
     }
     
-    const playerX = Math.floor(player/level.width);
-    const playerY = player%level.width;
-    console.log(playerX + " " + playerY);
-    console.log(level.board);
+    menuElements.push(cameraUp);
+    menuElements.push(cameraDown);
+    menuElements.push(cameraLeft);
+    menuElements.push(cameraRight); 
+}
+
+canvas.addEventListener('click', event => {
+    let xVal = event.pageX - canvas.offsetLeft;
+    let yVal = event.pageY - canvas.offsetTop;
+
+    menuElements.some(element => {
+        if (yVal > element.top && yVal < element.top + element.height
+            && xVal > element.left && xVal < element.left + element.width) {
+                element.fcn();
+                ctx.clearRect(0,0,canvas.width,canvas.height);
+                drawCanvas();
+                return;
+        }
+    })
+ }, false);
+
+canvas.addEventListener('mousemove', event => {
+    let xVal = event.pageX - canvas.offsetLeft;
+    let yVal = event.pageY - canvas.offsetTop;
+    console.log(xVal + " " + yVal);
+
+    let boundingBox = false;
+    menuElements.some(element => {
+        if (yVal > element.top && yVal < element.top + element.height
+            && xVal > element.left && xVal < element.left + element.width) {
+                canvas.style.cursor = 'pointer';
+                boundingBox = true;
+                return;
+        }
+    })
+    if (!boundingBox) canvas.style.cursor = 'default';
+ }, false);
+
+
+drawMenuButtons = () => {
+    menuElements.forEach(element => {
+        if (focusMode || element.image!=cameraUpIcon && element.image!=cameraDownIcon && element.image!=cameraLeftIcon && element.image!=cameraRightIcon) {
+            ctx.drawImage(element.image, element.left, element.top, element.width, element.height);
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = 'black';
+            ctx.strokeRect(element.left-1, element.top-1, element.width+2, element.height+2);
+        }
+    })
+}
+
+loadImage = (url) => new Promise(r => { let i = new Image(); i.onload = (() => r(i)); i.src = url; });
+
+let box;
+let boxGoal;
+let floor;
+let goal;
+let playerGoal;
+let playerIcon;
+let wall; 
+
+let zoomInIcon;
+let zoomOutIcon;
+
+let focusPlayerIcon;
+let focusCenterIcon;
+
+let cameraUpIcon;
+let cameraDownIcon;
+let cameraLeftIcon;
+let cameraRightIcon;
+
+let speedUpIcon;
+let slowDownIcon;
+
+let runPauseIcon;
+
+loadAllImages = () => {
+    box = loadImage("views/gfx/mapIcons/box.png");
+    boxGoal = loadImage("views/gfx/mapIcons/box_goal.png");
+    floor = loadImage("views/gfx/mapIcons/floor.png");
+    goal = loadImage("views/gfx/mapIcons/goal.png");
+    playerGoal = loadImage("views/gfx/mapIcons/player_goal.png");
+    playerIcon = loadImage("views/gfx/mapIcons/player.png");
+    wall = loadImage("views/gfx/mapIcons/wall.png");
+
+    zoomInIcon = loadImage("views/gfx/menu/zoom_in.png");
+    zoomOutIcon = loadImage("views/gfx/menu/zoom_out.png");
+
+    focusPlayerIcon = loadImage("views/gfx/menu/focus_player.png");
+    focusCenterIcon = loadImage("views/gfx/menu/focus_center.png");
+
+    cameraUpIcon = loadImage("views/gfx/menu/up_arrow.png");
+    cameraDownIcon = loadImage("views/gfx/menu/down_arrow.png");
+    cameraLeftIcon = loadImage("views/gfx/menu/left_arrow.png");
+    cameraRightIcon = loadImage("views/gfx/menu/right_arrow.png");
+
+    speedUpIcon = loadImage("views/gfx/menu/increase.png");
+    slowDownIcon = loadImage("views/gfx/menu/decrease.png");
+
+    runPauseIcon = loadImage("views/gfx/menu/run_pause.png");
+
+    Promise.all([box, boxGoal, floor, goal, playerGoal, playerIcon, wall, zoomInIcon, zoomOutIcon, focusPlayerIcon, focusCenterIcon, cameraUpIcon, cameraDownIcon, cameraLeftIcon, cameraRightIcon, speedUpIcon, slowDownIcon, runPauseIcon]).then((values) => {
+        box = values[0];
+        boxGoal = values[1];
+        floor = values[2];
+        goal = values[3];
+        playerGoal = values[4];
+        playerIcon = values[5];
+        wall = values[6];
+
+        zoomInIcon = values[7];
+        zoomOutIcon = values[8];
+
+        focusPlayerIcon = values[9];
+        focusCenterIcon = values[10];
+
+        cameraUpIcon = values[11];
+        cameraDownIcon = values[12];
+        cameraLeftIcon = values[13];
+        cameraRightIcon = values[14];
+
+        speedUpIcon = values[15];
+        slowDownIcon = values[16];
+
+        runPauseIcon = values[17];
+
+        initMenu();
+        drawCanvas();
+    });
+}
+
+drawCanvas = () => {
+    console.log(level);
+    let playerOnGround = level.board.indexOf("@")!=-1;
+    let player = playerOnGround ? level.board.indexOf("@") : level.board.indexOf("+");
+    
+    playerX = Math.floor(player/level.width);
+    playerY = player%level.width;
+
+    switch(focusMode) { 
+        case 0:
+            centerX = playerX;
+            centerY = playerY;
+            break;
+        case 1:
+            centerX = Math.round(level.width/2)-cameraPositionOffsetY;
+            centerY = Math.round(level.height/2)-cameraPositionOffsetX;
+            break;
+    }
+
+    //Drawing player
+    if (playerOnGround) {
+        console.log(playerIcon);
+        ctx.drawImage(playerIcon, canvas.width/2-currentSize/2-(centerY-playerY)*currentSize, canvas.height/2-currentSize/2-(centerX-playerX)*currentSize, currentSize, currentSize);
+    } else {
+        ctx.drawImage(playerGoal, canvas.width/2-currentSize/2-(centerY-playerY)*currentSize, canvas.height/2-currentSize/2-(centerX-playerX)*currentSize, currentSize, currentSize);
+    }
+
+    //console.log(centerX + " " + centerY);
+    //console.log(level.board);
     ctx.strokeStyle = "black";
     level.board.forEach((symbol, index) => {
-        console.log(symbol, index);
+        //console.log(symbol, index);
         switch(symbol) {
             case "#": {
                 //wall
-                ctx.fillStyle = "#000000";
-                ctx.fillRect(canvas.width/2-16-playerY*32+index%level.width*32, canvas.height/2-16-playerX*32+Math.floor(index/level.width)*32, 32, 32);
+                ctx.drawImage(wall, canvas.width/2-currentSize/2-centerY*currentSize+index%level.width*currentSize, canvas.height/2-currentSize/2-centerX*currentSize+Math.floor(index/level.width)*currentSize, currentSize, currentSize);
                 break;
             }
             case "*": {
                 //box on a goal
-                ctx.fillStyle = "#00007F";
-                ctx.fillRect(canvas.width/2-16-playerY*32+index%level.width*32, canvas.height/2-16-playerX*32+Math.floor(index/level.width)*32, 32, 32);
-
+                ctx.drawImage(boxGoal, canvas.width/2-currentSize/2-centerY*currentSize+index%level.width*currentSize, canvas.height/2-currentSize/2-centerX*currentSize+Math.floor(index/level.width)*currentSize, currentSize, currentSize);
                 break;
             }
             case ".": {
                 //goal
-                ctx.fillStyle = "#0000FF";
-                ctx.fillRect(canvas.width/2-16-playerY*32+index%level.width*32, canvas.height/2-16-playerX*32+Math.floor(index/level.width)*32, 32, 32);
+                ctx.drawImage(goal, canvas.width/2-currentSize/2-centerY*currentSize+index%level.width*currentSize, canvas.height/2-currentSize/2-centerX*currentSize+Math.floor(index/level.width)*currentSize, currentSize, currentSize);
                 break;
             }
             case "$": {
                 //box
-                ctx.fillStyle = "#FFFF00";
-                ctx.rect(canvas.width/2-15-playerY*32+index%level.width*32, canvas.height/2-15-playerX*32+Math.floor(index/level.width)*32, 30, 30);
-                ctx.fill();
-                ctx.stroke();
+                ctx.drawImage(box, canvas.width/2-currentSize/2-centerY*currentSize+index%level.width*currentSize, canvas.height/2-currentSize/2-centerX*currentSize+Math.floor(index/level.width)*currentSize, currentSize, currentSize);
                 break;
             }
             case " ":
             case "_": 
             case "-": {
-                //ground
-                ctx.fillStyle = "#4F4F4F";
-                ctx.fillRect(canvas.width/2-16-playerY*32+index%level.width*32, canvas.height/2-16-playerX*32+Math.floor(index/level.width)*32, 32, 32);
+                //floor
+                ctx.drawImage(floor, canvas.width/2-currentSize/2-centerY*currentSize+index%level.width*currentSize, canvas.height/2-currentSize/2-centerX*currentSize+Math.floor(index/level.width)*currentSize, currentSize, currentSize);
                 break;
             }
         }
     })
+
+    
+    //Drawing menu
+    ctx.font = "20px Alata";
+    ctx.fillText("Zoom: ", 10, 30);
+    if (details) {
+        ctx.fillText("Focus: ", 10, canvas.height-50);
+        ctx.fillText("Running speed: ", canvas.width-150, 30);
+        ctx.fillText(
+            (solution.solution[document.getElementById("currentStep").value-1] 
+            ? (solution.solution[document.getElementById("currentStep").value-1] + " ") 
+            : "") 
+        + (solution.solution[document.getElementById("currentStep").value] 
+            ? solution.solution[document.getElementById("currentStep").value] 
+            : "")
+        , canvas.width/2-10, 30);
+        ctx.fillText(("0" + currentSolvingSpeed).slice(-2), canvas.width-120, 30+35);
+    }
+    if(focusMode) ctx.fillText("Move camera: ", canvas.width-140, canvas.height-50-40);
+    drawMenuButtons();
+
 }
-window.onload = () => {
-    drawCanvas(); 
-}
+
+loadAllImages();

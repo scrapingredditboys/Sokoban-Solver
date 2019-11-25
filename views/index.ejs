@@ -1,13 +1,15 @@
 
 <html lang="en">
         <% include style/mainStyle %>  
-        <% include style/importChunks %>  
+        <% include style/importChunks %>
+        <% include style/index %>  
         <head>
             <% include style/head %>
         </head>
     
         <body>
-            Sokoban multisolver by Kacper Leszczyński and Bartłomiej Szymański
+            <div id="title">Sokoban Multisolver</div>
+            <div id="titlesub">by Kacper Leszczyński and Bartłomiej Szymański</div>
             <form method="get" action="/importFile" enctype="multipart/form-data">
                 <input type="submit" value="Import a file">
             </form>
