@@ -18,7 +18,7 @@ class AStar {
     public:
         AStar(Level &_level);
         ~AStar();
-        void start(double timeLimit);
+        std::string start(double timeLimit);
 
     private:
         Level &level;
