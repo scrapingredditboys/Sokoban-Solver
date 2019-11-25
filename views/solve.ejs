@@ -21,10 +21,14 @@
                 </form>
     
                 <span><%= levelCount ? 'Level: ' + currentlySelected : '' %></span>
-                <br />
-                <canvas id="levelPreview" width="1280" height="720"></canvas>
     
                 <form method="post" action="/solve" enctype="multipart/form-data">
+                    <canvas id="levelPreview" width="1280" height="720"></canvas>
+                    <br />
+                    <select name="method">
+                        <option value="Kacper">Kacper</option>
+                        <option value="JSoko">JSoko</option>
+                    </select>
                     <input type="submit" value="Solve this level!">
                 </form>
     
