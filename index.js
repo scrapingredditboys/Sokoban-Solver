@@ -39,7 +39,6 @@ app.post("/playLevel", function(req, res) {
     currentIndex = 1;
     fileName = files.fileToUpload.name;
     levels = new FileReader(files.fileToUpload.path);
-    console.log(levels.levelsArray[0]);
     res.render("playSokobanLevel", {
       fileName,
       levelCount: levels.levelsArray.length,
@@ -173,7 +172,6 @@ app.post("/upload", function(req, res) {
     currentIndex = 1;
     fileName = files.fileToUpload.name;
     levels = new FileReader(files.fileToUpload.path);
-    console.log(levels.levelsArray[0]);
     res.render("solve", {
       fileName,
       levelCount: levels.levelsArray.length,
@@ -229,7 +227,6 @@ const doingTheSolvingWork = async (method, methodSub, timeout) => {
         'solvers\\sokosolver.exe "' + levelString + '" ' + timeout * 1000;
       break;
   }
-  console.log(execString);
   const fileJSON = JSON.parse(fs.readFileSync("solutions/log.json"));
   let time = new Date();
   exec(execString, function callback(error, stdout, stderr) {
@@ -257,6 +254,7 @@ const doingTheSolvingWork = async (method, methodSub, timeout) => {
 
 //add the router
 app.use("/", router);
-app.listen(process.env.port || 3000);
 
-console.log("Running at Port 3000");
+const server = app.listen(process.env.port || 3000);
+
+module.exports = server;

@@ -1,4 +1,3 @@
-
 <html lang="en">
         <% include style/mainStyle %>  
         <% include style/importChunks %>
@@ -11,13 +10,13 @@
             <div id="title">Sokoban Multisolver</div>
             <div id="titlesub">by Kacper Leszczyński and Bartłomiej Szymański</div>
             <form method="get" action="/importFile" enctype="multipart/form-data">
-                <input type="submit" value="Import a file">
+                <input class="option" type="submit" value="Import a file">
             </form>
             <form method="get" action="/viewSolutions" enctype="multipart/form-data">
-                <input type="submit" value="View currently existing solutions">
+                <input class="option" type="submit" value="View currently existing solutions">
             </form>
             <form method="get" action="/playSokoban" enctype="multipart/form-data">
-                <input type="submit" value="Play Sokoban!">
+                <input class="option" type="submit" value="Play Sokoban!">
             </form>
         </body>
     </html>
