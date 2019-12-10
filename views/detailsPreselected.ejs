@@ -1,0 +1,22 @@
+
+<html lang="en">
+    <% include style/mainStyle %>
+    <% include style/table %>  
+    <% include style/importChunks %>  
+    <% include style/detailsPreselected %>  
+    <head>
+        <% include style/head %>
+    </head>
+
+    <body>
+        <% include rootButton %>
+        <div id="titleHead">Details of a given level pack:</div>
+        <br />
+        <div id="details"></div>
+        <script>
+            let picked = <%- JSON.stringify(picked) %>;
+            let setDetails = document.getElementById("details");
+            <% include scripts/preselectedDetails %>  
+        </script>
+    </body>
+</html>

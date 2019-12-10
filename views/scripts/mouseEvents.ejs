@@ -1,4 +1,4 @@
-canvas.addEventListener('click', event => {
+canvas.addEventListener('mouseup', event => {
     let xVal = event.pageX - canvas.offsetLeft;
     let yVal = event.pageY - canvas.offsetTop;
 
@@ -11,12 +11,37 @@ canvas.addEventListener('click', event => {
                 return;
         }
     })
+
+    if (typeof currentPressed !== 'undefined') {
+        
+        tilesOnGroundPositions.some((element, index) => {
+            if (yVal > element.top && yVal < element.top + element.height
+                && xVal > element.left && xVal < element.left + element.width) {
+                    defaultParams = false;
+                    if(element.character!="@" && element.character!="+") {
+                        if (currentPressed=="@" || currentPressed=="+") {
+                            let playerIndex = level.board.indexOf("@");
+                            let plusIndex = level.board.indexOf("+");
+                            if (playerIndex != -1) {
+                                level.board[level.board.indexOf("@")] = ' ';
+                            } else if (plusIndex != -1) {
+                                level.board[level.board.indexOf('+')] = '.';
+                            }
+                        }
+                        level.board[index] = currentPressed;
+                    }
+                    validateCorrectness();
+                    ctx.clearRect(0,0,canvas.width,canvas.height);
+                    drawCanvas();
+                    return;
+        }})
+    }
+
  }, false);
 
 canvas.addEventListener('mousemove', event => {
     let xVal = event.pageX - canvas.offsetLeft;
     let yVal = event.pageY - canvas.offsetTop;
-    console.log(xVal + " " + yVal);
 
     let boundingBox = false;
     menuElements.some(element => {
@@ -27,5 +52,17 @@ canvas.addEventListener('mousemove', event => {
                 return;
         }
     })
+
+    if (typeof currentPressed !== 'undefined') {
+        tilesOnGroundPositions.some(element => {
+            if (yVal > element.top && yVal < element.top + element.height
+                && xVal > element.left && xVal < element.left + element.width) {
+                    canvas.style.cursor = 'pointer';
+                    boundingBox = true;
+                    return;
+            }
+        })
+    }
+    
     if (!boundingBox) canvas.style.cursor = 'default';
  }, false);

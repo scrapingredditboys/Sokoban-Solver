@@ -12,6 +12,16 @@ class MenuElement {
     }
 }
 
+class BoardTilePosition {
+    constructor(left, top, width, height, character) {
+        this.left = left;
+        this.top = top;
+        this.width = width;
+        this.height = height;
+        this.character = character;
+    }
+}
+
 let currentSize = 32;
 
 zoomInFcn = () => currentSize<=128 && (currentSize *= 2);
@@ -28,6 +38,9 @@ let focusMode = details || playSokoban ? 0 : 1;
 let cameraPositionOffsetX = 0;
 let cameraPositionOffsetY = 0;
 
+let undoAvailable = false;
+let redoAvailable = false;
+
 focusPlayerFcn = () => focusMode = 0;
 focusCenterFcn = () => focusMode = 1;
 
@@ -41,6 +54,24 @@ let currentSolvingSpeed = 15;
 speedUpFcn = () => currentSolvingSpeed<30 && currentSolvingSpeed++;
 slowDownFcn = () => currentSolvingSpeed>0 && currentSolvingSpeed--;
 
+undoFcn = () => {
+    currentStepsString = currentStepsString.slice(0, -1);
+    redoAvailable = true;
+    if (!currentStepsString) undoAvailable = false;
+    undos++;
+    recalculateStatsJs();
+}
+
+redoFcn = () => {
+    if (currentStepsString.length!=stepsString.length) {
+        currentStepsString += stepsString.charAt(currentStepsString.length);
+        undoAvailable = true;
+        if (currentStepsString.length==stepsString.length) redoAvailable = false;
+        redos++;
+        recalculateStatsJs();
+    }
+}
+
 let solutionRunning = false;
 
 solveClickFcn = () => solutionRunning ? haltSolveFcn() : solveFcn();
@@ -50,6 +81,13 @@ let currentTimeout;
 let allBoardStates = [];
 
 <% include updateCurrentStep %>
+
+//Make sure the window won't scroll with arrow keys
+window.addEventListener("keydown", (e) => {
+    if([32, 37, 38, 39, 40].indexOf(e.keyCode) > -1) {
+        e.preventDefault();
+    }
+}, false);
 
 solveFcn = () => {
     if (document.getElementById("currentStep").value!=document.getElementById("currentStep").max) {
@@ -72,8 +110,9 @@ haltSolveFcn = () => {
 <% include loadingImages %>
 <% include menu %>
 
+let tilesOnGroundPositions = [];
 drawCanvas = () => {
-    console.log(level);
+    tilesOnGroundPositions = [];
     let playerOnGround = level.board.indexOf("@")!=-1;
     let player = playerOnGround ? level.board.indexOf("@") : level.board.indexOf("+");
     
@@ -86,24 +125,23 @@ drawCanvas = () => {
             centerY = playerY;
             break;
         case 1:
-            centerX = Math.round(level.width/2)-cameraPositionOffsetY;
-            centerY = Math.round(level.height/2)-cameraPositionOffsetX;
+            centerX = Math.round(level.height/2)-cameraPositionOffsetY;
+            centerY = Math.round(level.width/2)-cameraPositionOffsetX;
             break;
     }
 
     //Drawing player
     if (playerOnGround) {
-        console.log(playerIcon);
+        //console.log(playerIcon);
         ctx.drawImage(playerIcon, canvas.width/2-currentSize/2-(centerY-playerY)*currentSize, canvas.height/2-currentSize/2-(centerX-playerX)*currentSize, currentSize, currentSize);
     } else {
         ctx.drawImage(playerGoal, canvas.width/2-currentSize/2-(centerY-playerY)*currentSize, canvas.height/2-currentSize/2-(centerX-playerX)*currentSize, currentSize, currentSize);
     }
 
-    //console.log(centerX + " " + centerY);
-    //console.log(level.board);
     ctx.strokeStyle = "black";
     level.board.forEach((symbol, index) => {
         //console.log(symbol, index);
+        tilesOnGroundPositions.push(new BoardTilePosition(canvas.width/2-currentSize/2-centerY*currentSize+index%level.width*currentSize, canvas.height/2-currentSize/2-centerX*currentSize+Math.floor(index/level.width)*currentSize, currentSize, currentSize, symbol));
         switch(symbol) {
             case "#": {
                 //wall
@@ -141,7 +179,8 @@ drawCanvas = () => {
     ctx.fillText("Zoom: ", 10, 30);
     if (details || playSokoban) {
         ctx.fillText("Focus: ", 10, canvas.height-50);
-    } if (details) {
+    } 
+    if (details) {
         ctx.fillText("Running speed: ", canvas.width-150, 30);
         ctx.fillText(
             (solution.solution[document.getElementById("currentStep").value-1] 
@@ -152,8 +191,9 @@ drawCanvas = () => {
             : "")
         , canvas.width/2-10, 30);
         ctx.fillText(("0" + currentSolvingSpeed).slice(-2), canvas.width-120, 30+35);
+    } else if (playSokoban) {
+        ctx.fillText("Undo/redo moves: ", canvas.width-180, 30);
     }
     if(focusMode) ctx.fillText("Move camera: ", canvas.width-140, canvas.height-50-40);
     drawMenuButtons();
-
 }

@@ -1,0 +1,38 @@
+<% include style/table %>  
+
+<div id="preinstalled">
+    <div id="titleHead">
+        <% if(mode == "details") { %>
+            Show details of a pre-installed level pack:
+        <% } else { %>
+            Select a pre-installed level pack:
+        <% }%> 
+    </div>
+    You can click on any of the table headers to sort table by a given category.
+    <table>
+        <thead>
+            <th onclick="sortBy('levelSetName')">Level set name</th>
+            <th onclick="sortBy('levelCount')">Level count</th>
+            <th onclick="sortBy('year')">Creation year</th>
+            <th onclick="sortBy('author')">Author</th>
+        </tr>
+        <tbody id="levelSetBody"></tbody>
+    </table>
+</div>
+
+<script>
+    let levelSets = <%- JSON.stringify(preinstalledLevelSets) %>;
+    let mode = "<%- mode %>";
+    displaySolutions = () => {
+        let tableBody = document.getElementById("levelSetBody");
+        tableBody.innerHTML = null;
+        levelSets.forEach((levelSet, index) => 
+            tableBody.innerHTML += '<tr><td><a href="/' + mode + '?fileSetName='+ levelSet.fileName + '">' + levelSet.levelSetName + '</a></td><td>' 
+                    + levelSet.levelCount + '</td><td>' + levelSet.year + '</td><td>' + levelSet.author + '</td></tr>'
+        )
+    }
+
+    sortBy = (column) => window.location.href = "?sortingMethod=" + column;
+
+    displaySolutions();
+</script>

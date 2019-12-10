@@ -1,0 +1,30 @@
+
+<html lang="en">
+        <% include style/index %> 
+        <% include style/mainStyle %>  
+        <% include style/importChunks %>  
+        <head>
+            <% include style/head %>
+        </head>
+    
+        <body>
+            <% if(update) { %>
+                Level set <%= fileName %> has been updated!<br/>
+            <% } else { %>
+                Level set <%= fileName %> has been created!<br/>
+            <% } %>
+
+            It was stored locally, however you can download it at any time:
+            <form method="get" action="/downloadFile" enctype="multipart/form-data">
+                <input class="optionSmaller" type="submit" value="Download the level set file">
+            </form>
+            Or go to the level set details:
+            <form method="get" action="/customLevelSetDetails" enctype="multipart/form-data">
+                <input type="hidden" name="fileSetName" value="<%= fileName %>" />
+                <input class="optionSmaller" type="submit" value="Go to level set details">
+            </form>
+            <form method="get" action="/root" enctype="multipart/form-data">
+                <input class="optionSmaller" type="submit" value="Return back to the root">
+            </form>
+        </body>
+    </html>

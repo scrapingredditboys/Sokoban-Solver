@@ -8,6 +8,7 @@
     </head>
 
     <body>
+        <% include rootButton %>
         <div id="fileName"><%= (fileName) ? fileName : '' %></div> 
         Total amount of levels: <%= levelCount %>
         <form method="post" action="/playOtherLevel" enctype="multipart/form-data">
@@ -20,7 +21,21 @@
         <br/>
         <canvas id="levelPreview" width="1280" height="720"></canvas>
         <div>Use keyboard keys (up, down, left, right) to advance through level.</div>
-        <div id="stepsDiv">Current steps: <div id="stepsList"></div></div>
+        <div id="titleHead">Level stats:</div> 
+        <div id="stepsDiv">Current steps: <div id="stepsList"></div><table id="scores">
+                <thead>
+                    <tr>
+                        <th>Moves</th>
+                        <th>Pushes</th>
+                        <th>Undos</th>
+                        <th>Redos</th>
+                        <th id="timeColumn">Time</th>
+                        <th id="solutionColumn">Solution</th>
+                    </tr>
+                </thead>
+                <tbody id="stepsStats"></tbody>
+            </table>
+        </div>
 
         <script>
             let level = <%- JSON.stringify(level) %>;
@@ -36,6 +51,17 @@
                 ctx.clearRect(0,0,canvas.width,canvas.height);
                 drawCanvas();
                 stepsList.innerHTML = "";
+                stepsString = "";
+                currentStepsString = "";
+                currentStep = 0;
+                sokobanBoardStates = [];
+                sokobanBoardStates.push([...level.board]);
+                dateNow = undefined;
+                undos = 0;
+                redos = 0;
+                solved = false;
+                timeSolved = 0;
+                time = 0;
             }
         </script>
     </body>

@@ -58,6 +58,18 @@ loadAllImages = () => {
         playerIcon = values[5];
         wall = values[6];
 
+        let tiles = document.getElementById("tiles");
+
+        if(tiles) {
+            tiles.innerHTML = '<input id="$" onclick="changeTileType(this.id); return false;" class="tileTypes selected" type="image" src=' + box.src + ' />\
+            <input id="*" onclick="changeTileType(this.id); return false;" class="tileTypes" type="image" src=' + boxGoal.src + ' />\
+            <input id=" " onclick="changeTileType(this.id); return false;" class="tileTypes" type="image" src=' + floor.src + ' />\
+            <input id="." onclick="changeTileType(this.id); return false;" class="tileTypes" type="image" src=' + goal.src + ' />\
+            <input id="+" onclick="changeTileType(this.id); return false;" class="tileTypes" type="image" src=' + playerGoal.src + ' />\
+            <input id="@" onclick="changeTileType(this.id); return false;" class="tileTypes" type="image" src=' + playerIcon.src + ' />\
+            <input id="#" onclick="changeTileType(this.id); return false;" class="tileTypes" type="image" src=' + wall.src + ' />'
+        }
+
         zoomInIcon = values[7];
         zoomOutIcon = values[8];
 

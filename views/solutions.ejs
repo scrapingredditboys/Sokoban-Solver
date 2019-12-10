@@ -8,6 +8,7 @@
         </head>
     
         <body>
+            <% include rootButton %>
             <script> 
                 let skip = false;
                 skipFcn = () => {
@@ -17,15 +18,12 @@
 
                 sortBy = (column) => window.location.href = "?sortingMethod=" + column;
             </script>
-            <div id="rangeInputContainer">
+            <div id="titleHead">
                 Solutions:
             </div>
-            <br />
             You can click on any of the table headers to sort table by a given category.
             <br />
-            <input type="checkbox" onClick="skipFcn()">Display only solved levels<br>
-
-            <br />
+            <input type="checkbox" onClick="skipFcn()">Display only solved levels
             <table>
                 <thead>
                     <tr>

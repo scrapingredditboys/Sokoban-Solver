@@ -1,3 +1,4 @@
+
 solutionDetails.innerHTML += "<span><span id='inb4info'>Name of the level set: </span>" + solution.fileName + "</span><br \>";
 solutionDetails.innerHTML += "<span><span id='inb4info'>Level ID in the dataset: </span>" + solution.levelIndex + "</span><br \>";
 solutionDetails.innerHTML += "<span><span id='inb4info'>Method used to solve the level: </span>" + solution.method + "</span><br \>";
@@ -45,3 +46,31 @@ if (solution.solution.length) {
     document.getElementById("rangeInputContainer").remove();
     document.getElementById("levelPreview").remove();
 }
+
+document.addEventListener('keyup', (e) => {
+    let currentStepNumber = document.getElementById("currentStep");
+    if (e.code === "ArrowLeft") {
+        currentStepNumber.value = parseInt(currentStepNumber.value)-1;
+    } else if (e.code === "ArrowRight") {
+        currentStepNumber.value = parseInt(currentStepNumber.value)+1
+    }
+    currentStepNumber.onchange();
+});
+
+const hints = [
+    "You can advance the solution using left and right keyboard keys as well!",
+    "30 is the highest a running speed can be set to, a level will be solved almost instantly!",
+    "One focus mode allows you to lock the camera on player, while the other will try to focus the central point of the level.",
+    "If you wanted to play the level manually, go to the Play mode of the application!",
+    "Uppercase letters of the string solution signify moves with pushes, lowercase signify moves without pushes.",
+    "Solution string is in LURD format, L stands for a move left, U for move up, R move right and D for move down.",
+    "There are many different XSB level packs on the internet, give a different level set a shot as well!"
+]
+
+hintsRandomize = () => {
+    let hintsDOM = document.getElementById("hints");
+    let currentHint = hints[Math.floor(Math.random() * hints.length)];
+    hintsDOM.innerHTML = "Hint: " + currentHint;
+}
+hintsRandomize();
+setInterval(hintsRandomize, 10000);

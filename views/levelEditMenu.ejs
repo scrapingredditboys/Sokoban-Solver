@@ -1,0 +1,39 @@
+
+<html lang="en">
+    <% include style/mainStyle %>  
+    <% include style/importChunks %>  
+    <% include style/table %>  
+    <% include style/index %>  
+    <head>
+        <% include style/head %>
+    </head>
+
+    <body>
+        <% include rootButton %>
+        <div id="customSets">
+                <div id="titleHead">
+                    List of custom-created level sets:
+                </div>
+            <table>
+                <thead>
+                    <th>Level set name</th>
+                </tr>
+                <tbody id="levelSetBody"></tbody>
+            </table>
+        </div>
+
+        <script>
+            let levelSets = <%- JSON.stringify(levels) %>;
+            displaySolutions = () => {
+                let tableBody = document.getElementById("levelSetBody");
+                tableBody.innerHTML = null;
+                levelSets.forEach((levelSet, index) => 
+                    tableBody.innerHTML += '<tr><td><a href="/customLevelSetDetails?fileSetName='+ levelSet + '">' + levelSet + '</a></td></tr>');
+
+                    tableBody.innerHTML += '<tr><td><button onclick="location.href=\'/createANewLevelSet\'">Create a new level set!</a></td></tr>'
+            }
+
+            displaySolutions();
+        </script> 
+    </body>
+</html>

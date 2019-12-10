@@ -1,7 +1,6 @@
 displaySolutions = () => {
     let tableBody = document.getElementById("solutionsBody");
     tableBody.innerHTML = null;
-    console.log(solutions);
     solutions.forEach((solution, index) => {
         let pushes = solution.solution.length ? solution.solution.match(/[A-Z]/g).length : 0;
         let methodName = solution.method=='JSoko' ? solution.method + ' (' + solution.arguments + ')' : solution.method;

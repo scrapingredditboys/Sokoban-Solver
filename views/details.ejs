@@ -8,6 +8,7 @@
         </head>
     
         <body>
+            <% include rootButton %>
             <div id="rangeInputContainer">
                     <div><span id="inb4info">Step: </span><span id="currentStepNumber">0</span></div><br />
                     <span id="rangeInputBar">0<input type="range" id="currentStep" name="rangeInput" value="0" min="0" max="<%- solution.solution.length %>" onchange="updateCurrentStep(this.value);"><%- solution.solution.length %></span>
@@ -15,9 +16,9 @@
                 
                 <br />
                 <canvas id="levelPreview" width="1280" height="720"></canvas>
-                <br/>
-            Details of the current solution:
-            <br />
+                <br/>    
+            <div id="hints"></div>
+            <div id="titleHead">Details of the current solution:</div>
             <div id="details"></div>
             <script>
                 let solution = <%- JSON.stringify(solution) %>;

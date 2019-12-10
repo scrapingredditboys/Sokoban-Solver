@@ -1,0 +1,83 @@
+
+<html lang="en">
+    <% include style/mainStyle %>  
+    <% include style/index %> 
+    <% include style/solve %>  
+    <% include style/customLevelSet %>  
+    <% include style/importChunks %>  
+    <head>
+        <% include style/head %>
+    </head>
+
+
+    <body>
+        <% include rootButton %>
+        <div id="fileName"><%= (fileName) ? fileName : '' %></div>
+        <% if(levelCount) { %> 
+            Total amount of levels: <%= levelCount %>
+            <form method="post" action="/customLevelSetDetailsLevel" enctype="multipart/form-data">
+                Selected level: <br/>
+                <input type="number" name="selectedLevel" min="1" max="<%= levelCount %>" value="<%= currentlySelected %>">
+                <input type="submit" value="Select Level">
+            </form>
+
+            <span><%= levelCount ? 'Level: ' + currentlySelected : '' %></span><br/>
+            <canvas id="levelPreview" width="1280" height="720"></canvas>
+            <div id="allOptions">
+                    <form method="get" action="/downloadFile" enctype="multipart/form-data">
+                        <input class="optionSmaller" type="submit" value="Download the level set file">
+                    </form>
+                    <form method="get" action="/addALevel" enctype="multipart/form-data">
+                        <input class="optionSmaller" type="submit" value="Add a new level">
+                    </form>
+                    <form method="get" action="/editALevel" enctype="multipart/form-data">
+                        <input class="optionSmaller" type="submit" value="Edit this level">
+                    </form>
+                    <form method="get" action="/deleteTheSet" enctype="multipart/form-data">
+                        <input class="optionSmaller" onclick="return confirm('Are you sure you want to remove this level set? It will be impossible to recover it once it\'s deleted.')" type="submit" value="Delete the level set">
+                    </form>
+                    <form method="get" action="/solvePreselec" enctype="multipart/form-data">
+                        <input type="hidden" name="fileSetName" value="<%= fileName %>" />
+                        <input type="hidden" name="currentIndex" value="<%= currentlySelected %>" />
+                        <input type="hidden" name="custom" value="true" />
+                        <input class="playSolve" type="submit" value="Solve this level set!">
+                    </form>
+                    <form method="get" action="/playPreselec" enctype="multipart/form-data">
+                        <input type="hidden" name="fileSetName" value="<%= fileName %>" />
+                        <input type="hidden" name="currentIndex" value="<%= currentlySelected %>" />
+                        <input type="hidden" name="custom" value="true" />
+                        <input class="playSolve" type="submit" value="Play this level set!">
+                    </form>
+            </div>
+            
+
+            <script>
+                let level = <%- JSON.stringify(level) %>;
+                let details = false;
+                let playSokoban = false;
+                <% include scripts/drawingCanvas %>
+
+                const appendParams = () => {
+                    let methodPicker = document.getElementById('methodPicker');
+                    let methodSub = document.getElementById('methodSub');
+
+                    if (methodPicker.value=="JSoko") {
+                        methodSub.innerHTML = '<select name="methodSub"> <option value="as">Any solution</option><option value="po">Push optimal</option><option value="pm">Pushes moves</option><option value="pm">Moves pushes</option><option value="e">Evolutionary</option><option value="bfs">BFS</option></select>';
+                    } else {
+                        methodSub.innerHTML = '';
+                    }
+                }
+                
+            </script>
+        <% } else { %>
+            <% include preinstalled %> 
+            <div id='uploader'>
+                <div id="titleHead">Alternatively, Upload an XSB file:</div>
+                <form method="post" action="/upload" enctype="multipart/form-data">
+                    <input type="file" name="fileToUpload">
+                    <input type="submit" value="Submit">
+                </form>
+            </div>
+        <% } %>
+    </body>
+</html>

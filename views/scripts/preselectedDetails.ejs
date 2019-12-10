@@ -1,0 +1,11 @@
+setDetails.innerHTML += "<span><span id='inb4info'>Name of the level set: </span>" + picked.levelSetName + "</span><br \>";
+setDetails.innerHTML += "<span><span id='inb4info'>Brief description: </span><br /><span id='solutionStringText'>" + picked.description + "</span></span><br \>";
+setDetails.innerHTML += "<span><span id='inb4info'>Year of the set's creation: </span>" + picked.year + "</span><br \>";
+setDetails.innerHTML += "<span><span id='inb4info'>Level count: </span>" + picked.levelCount + "</span><br \>";
+setDetails.innerHTML += "<span><span id='inb4info'>Author name: </span>" + picked.author + "</span><br \>";
+setDetails.innerHTML += "<span><span id='inb4info'><a href='" + picked.link + "'>Read more about the level set (external link)</a></span>";
+
+const linkToSolve = "location.href='/solvePreselec?fileSetName=" + picked.fileName + "'";
+const linkToPlay = "location.href='/playPreselec?fileSetName=" + picked.fileName + "'";
+setDetails.innerHTML += "<br /><button onclick=" + linkToSolve + ">Solve this level set!</button>";
+setDetails.innerHTML += "<button onclick=" + linkToPlay + ">Play this level set!</button>";

@@ -12,18 +12,91 @@ const router = express.Router();
 const Level = require("./classes/Level.js");
 const FileReader = require("./classes/FileReader.js");
 
+const preinstalledLevelSets = require("./classes/PreinstalledLevelSets.js");
+
 app.set("view engine", "ejs");
 
 app.get("/", function(req, res) {
   res.render("index");
 });
 
+app.get("/credits", function(req, res) {
+  res.render("credits");
+});
+
+let levelPakDesc = false;
+const sortLevelPaks = (sortingMethod) => {
+  switch (sortingMethod) {
+    case "year":
+      preinstalledLevelSets.sort(
+        (a, b) => parseInt(a.year) - parseInt(b.year)
+      );
+      break;
+    case "levelCount":
+      preinstalledLevelSets.sort(
+        (a, b) => parseInt(a.levelCount) - parseInt(b.levelCount)
+      );
+      break;
+    case "levelSetName":
+      preinstalledLevelSets.sort((a, b) => a.levelSetName.localeCompare(b.levelSetName));
+      break;
+    case "author":
+      preinstalledLevelSets.sort((a, b) => a.author.localeCompare(b.author));
+      break;
+  }
+  if (levelPakDesc) {
+    levelPakDesc = false;
+  } else {
+    levelPakDesc = true;
+    preinstalledLevelSets.reverse();
+  }
+}
+
 app.get("/importFile", function(req, res) {
-  res.render("solve", { fileName: "", levelCount: "" });
+  if (req.query.sortingMethod) {
+    sortLevelPaks(req.query.sortingMethod);
+  }
+  res.render("solve", { fileName: "", levelCount: "", preinstalledLevelSets, mode: "solvePreselec"});
 });
 
 app.get("/playSokoban", function(req, res) {
-  res.render("playSokoban");
+  if (req.query.sortingMethod) {
+    sortLevelPaks(req.query.sortingMethod);
+  }
+  res.render("playSokoban", {preinstalledLevelSets, mode: "playPreselec"});
+});
+
+app.get("/manageLevelSets", function(req, res) {
+  if (req.query.sortingMethod) {
+    sortLevelPaks(req.query.sortingMethod);
+  }
+  res.render("manageLevelSets", {preinstalledLevelSets, mode: "detailsPreselec"});
+});
+
+app.get("/levelEditMenu", function(req, res) {
+  let levels = [];
+  fs.readdir('levelsets/imported', (err, files) => {
+    files.forEach(file => {
+      levels.push(file);
+    });
+    res.render("levelEditMenu", {levels});
+  });
+});
+
+app.get("/createANewLevelSet", function(req, res) {
+  levels = new FileReader("levelsets/defaultlevel.xsb");
+  res.render("createANewLevelSet", {fileName: '', level: levels.levelsArray[0], index: 0});
+});
+
+
+app.get("/addALevel", function(req, res) {
+  let levelSetLength = levels.levelsArray.length;
+  levels = new FileReader("levelsets/defaultlevel.xsb");
+  res.render("createANewLevelSet", {fileName, level: levels.levelsArray[0], index: levelSetLength+1});
+});
+
+app.get("/editALevel", function(req, res) {
+  res.render("createANewLevelSet", {fileName, level: levels.levelsArray[currentIndex-1], index: currentIndex});
 });
 
 app.get("/", function(req, res) {
@@ -48,6 +121,19 @@ app.post("/playLevel", function(req, res) {
   });
 });
 
+app.get("/playPreselec", function(req, res) {
+  currentIndex = req.query.currentIndex || 1;
+  fileName = req.query.fileSetName;
+  if(req.query.custom) levels = new FileReader("levelsets/imported/" + fileName);
+  else levels = new FileReader("levelsets/preinstalled/" + fileName);
+  res.render("playSokobanLevel", {
+    fileName,
+    levelCount: levels.levelsArray.length,
+    currentlySelected: currentIndex,
+    level: levels.levelsArray[currentIndex-1]
+  });
+});
+
 app.get("/playLevel", function(req, res) {
   res.render("playSokobanLevel", {
     fileName,
@@ -55,6 +141,11 @@ app.get("/playLevel", function(req, res) {
     currentlySelected: currentIndex,
     level: levels.levelsArray[currentIndex - 1]
   });
+});
+
+app.get("/deleteTheSet", function(req, res) {
+  fs.unlinkSync("levelsets/imported/" + fileName);
+  res.redirect("/levelEditMenu");
 });
 
 app.post("/playOtherLevel", function(req, res) {
@@ -142,6 +233,35 @@ app.get("/details", function(req, res) {
   res.render("details", { solution: solutions[req.query.id] });
 });
 
+app.get("/customLevelSetDetails", function(req, res) {
+  currentIndex = req.query.levelNumber || 1;
+  fileName = req.query.fileSetName || fileName;
+  levels = new FileReader("levelsets/imported/" + req.query.fileSetName);
+  res.render("customLevelSetDetails", {
+    fileName,
+    levelCount: levels.levelsArray.length,
+    currentlySelected: currentIndex,
+    level: levels.levelsArray[0]
+  });
+});
+
+app.post("/customLevelSetDetailsLevel", function(req, res) {
+  console.log(levels.levelsArray);
+  new formidable.IncomingForm().parse(req, (err, fields, files) => {
+    if (err) {
+      console.error("Error", err);
+      throw err;
+    }
+    currentIndex = fields.selectedLevel;
+    res.render("customLevelSetDetails", {
+      fileName,
+      levelCount: levels.levelsArray.length,
+      currentlySelected: currentIndex,
+      level: levels.levelsArray[currentIndex-1]
+    });
+  });
+});
+
 app.post("/solve", function(req, res) {
   new formidable.IncomingForm().parse(req, (err, fields, files) => {
     if (err) {
@@ -149,14 +269,63 @@ app.post("/solve", function(req, res) {
       throw err;
     }
     doingTheSolvingWork(fields.method, fields.methodSub, fields.methodTimeout);
+
     res.render("scheduledToSolve", {
       currentlySelected: currentIndex
     });
   });
 });
 
+app.post("/addCustomLevelSet", function(req, res) {
+  new formidable.IncomingForm().parse(req, (err, fields, files) => {
+    if (err) {
+      console.error("Error", err);
+      throw err;
+    }
+    levelIndex = fields.index;
+    let update = false;
+    if (typeof levelIndex == 'undefined') {
+      levels = new FileReader("levelsets/defaultlevel.xsb");
+      currentIndex = 0;
+      fileName = fields.newFileName+".xsb";
+    } else {
+      levels = new FileReader("levelsets/imported/" + fields.newFileName);
+      fileName = fields.newFileName;
+      currentIndex = levelIndex-1;
+      update=true;
+      if (levels.levelsArray[currentIndex]=='undefined') levels.levelsArray.push(levels.levelsArray[currentIndex-1]);
+    }
+
+    console.log(levels);
+    let customLevel = JSON.parse(fields.levelBoard);
+    levels.levelsArray[currentIndex].width = customLevel.width;
+    levels.levelsArray[currentIndex].boxCount = customLevel.boxCount;
+    levels.levelsArray[currentIndex].height = customLevel.height;
+    levels.levelsArray[currentIndex].board = customLevel.board;
+
+    currentIndex++;
+    let stringToExport = "";
+    levels.levelsArray.forEach((level, index) => {
+      let exportFile = level.board.join("").match(new RegExp('.{1,' + level.width + '}', 'g'));
+      exportFile.forEach(line => stringToExport += line + "\n");
+      stringToExport += ";" + index + "\n"
+    })
+    fs.closeSync(fs.openSync("levelsets/imported/" + fileName, 'a'));
+    fs.writeFileSync("levelsets/imported/" + fileName ,stringToExport,{encoding:'utf8',flag:'w'})
+    res.render("levelSetCreated", {
+      fileName,
+      update
+    });
+  });
+});
+
 app.get(["/root", "/solve", "/upload", "/select"], function(req, res) {
   res.redirect("/");
+});
+
+app.get("/downloadFile", function(req, res) {
+  const file = "levelsets/imported/" + fileName;
+  res.download(file);
 });
 
 let currentIndex;
@@ -178,6 +347,26 @@ app.post("/upload", function(req, res) {
       currentlySelected: currentIndex,
       level: levels.levelsArray[0]
     });
+  });
+});
+
+app.get("/solvePreselec", function(req, res) {
+  currentIndex = req.query.currentIndex || 1;
+  fileName = req.query.fileSetName;
+  if(req.query.custom) levels = new FileReader("levelsets/imported/" + fileName);
+  else levels = new FileReader("levelsets/preinstalled/" + fileName);
+  res.render("solve", {
+    fileName,
+    levelCount: levels.levelsArray.length,
+    currentlySelected: currentIndex,
+    level: levels.levelsArray[currentIndex-1]
+  });
+});
+
+app.get("/detailsPreselec", function(req, res) {
+  let picked = preinstalledLevelSets.find(o => o.fileName === req.query.fileSetName);
+  res.render("detailsPreselected", {
+    picked
   });
 });
 
@@ -206,11 +395,11 @@ app.use(express.json());
 
 const doingTheSolvingWork = async (method, methodSub, timeout) => {
   const levelString = levels.levelsArray[currentIndex - 1].board
-    .join("")
-    .match(
-      new RegExp(".{1," + levels.levelsArray[currentIndex - 1].width + "}", "g")
-    )
-    .join("|");
+  .join("")
+  .match(
+    new RegExp(".{1," + levels.levelsArray[currentIndex - 1].width + "}", "g")
+  )
+  .join("|");
   let execString;
   switch (method) {
     case "JSoko":
@@ -227,8 +416,9 @@ const doingTheSolvingWork = async (method, methodSub, timeout) => {
         'solvers\\sokosolver.exe "' + levelString + '" ' + timeout * 1000;
       break;
   }
-  const fileJSON = JSON.parse(fs.readFileSync("solutions/log.json"));
+  let fileJSON = JSON.parse(fs.readFileSync("solutions/log.json"));
   let time = new Date();
+  
   exec(execString, function callback(error, stdout, stderr) {
     let timeFinal = Date.now() - time;
     let solution = {

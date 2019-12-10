@@ -8,8 +8,8 @@
         </head>
     
     
-    
         <body>
+            <% include rootButton %>
             <div id="fileName"><%= (fileName) ? fileName : '' %></div>
             <% if(levelCount) { %> 
                 Total amount of levels: <%= levelCount %>
@@ -34,7 +34,7 @@
                         Timeout (in s):
                         <span id="methodTimeout"><input type="number" name="methodTimeout" min="1" max="180" value="30"></span>
                     </div>
-                    <input id="submit" type="submit" value="Solve this level!">
+                    <input id="submit" name="submitOne" type="submit" value="Solve this level!">
                 </form>
     
                 <script>
@@ -54,12 +54,11 @@
                         }
                     }
                     
-                    
                 </script>
             <% } else { %>
+                <% include preinstalled %> 
                 <div id='uploader'>
-                    Upload an XSB file: <br />
-                
+                    <div id="titleHead">Alternatively, Upload an XSB file:</div>
                     <form method="post" action="/upload" enctype="multipart/form-data">
                         <input type="file" name="fileToUpload">
                         <input type="submit" value="Submit">

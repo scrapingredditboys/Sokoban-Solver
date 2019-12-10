@@ -1,6 +1,18 @@
 let stepsList = document.getElementById('stepsList');
+let stepsStats = document.getElementById('stepsStats');
+
+let stepsString = "";
+let currentStepsString = "";
+let currentStep = 0;
+let sokobanBoardStates = [];
+sokobanBoardStates.push([...level.board]);
+let dateNow;
+let undos = 0;
+let redos = 0;
 
 document.addEventListener('keyup', (e) => {
+    if (!dateNow) dateNow = Date.now();
+
     let playerOnGround = level.board.indexOf("@")!=-1;
     let player = playerOnGround ? level.board.indexOf("@") : level.board.indexOf("+");
     let doStep = '';
@@ -43,9 +55,56 @@ document.addEventListener('keyup', (e) => {
     }
 
     if(doStep) {
-        level.board = calculatingOneStep(doStep, level.board);
-        stepsList.innerHTML+=doStep;
+        if (stepsString.length!=currentStepsString.length) {
+            let difference = Math.abs(stepsString.length-currentStepsString.length);
+            sokobanBoardStates.splice(-difference, difference);
+            stepsString = currentStepsString;
+        }
+        undoAvailable = true;
+        stepsString+=doStep;
+        currentStepsString+=doStep;
+        let newBoard = [...sokobanBoardStates[currentStep]];
+        newBoard = calculatingOneStep(doStep, newBoard);
+        sokobanBoardStates.push(newBoard);      
+        
+        recalculateStatsJs();
+    }
+});
+
+recalculateStatsJs = () => {
+    currentStep = currentStepsString.length;
+    level.board = sokobanBoardStates[currentStep];
+    stepsList.innerHTML = currentStepsString;
+    let pushes = currentStepsString.match(/[A-Z]/g) ? currentStepsString.match(/[A-Z]/g).length : 0;
+    if(solved && level.board.indexOf('$')!=-1) {
+        solved=!solved;
+        dateNow = Date.now();
+        gameStatsInterval = setInterval(recalculateStatsHtml, 0);
     }
     ctx.clearRect(0,0,canvas.width,canvas.height);
     drawCanvas();
-});
+}
+
+let solved = false;
+let time = 0;
+let timeSolved = 0;
+let gameStatsInterval
+
+let solutionsString = '';
+
+recalculateStatsHtml = () => {
+    let pushes = currentStepsString.match(/[A-Z]/g) ? currentStepsString.match(/[A-Z]/g).length : 0;
+    if (dateNow) {
+        time = Math.round(timeSolved + (Date.now()-dateNow))/1000;
+    }
+    if (level.board.indexOf('$')==-1) {
+        solved = true;
+        timeSolved = time*1000;
+        clearInterval(gameStatsInterval);
+        solutionsString+='<tr><td>' + currentStepsString.length + '</td><td>' + pushes + '</td><td>' + undos + '</td><td>' + redos + '</td><td>' + time + 's</td><td id="solutionRow">' + currentStepsString + '</td></tr>';
+    }
+    stepsStats.innerHTML = solutionsString;
+    if (!solved) stepsStats.innerHTML +='<tr><td>' + currentStepsString.length + '</td><td>' + pushes + '</td><td>' + undos + '</td><td>' + redos + '</td><td>' + time + 's</td></tr>';
+}
+
+gameStatsInterval = setInterval(recalculateStatsHtml, 0);

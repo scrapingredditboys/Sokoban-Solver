@@ -10,13 +10,22 @@
             <div id="title">Sokoban Multisolver</div>
             <div id="titlesub">by Kacper Leszczyński and Bartłomiej Szymański</div>
             <form method="get" action="/importFile" enctype="multipart/form-data">
-                <input class="option" type="submit" value="Import a file">
+                <input class="option" type="submit" value="Use a solver to solve a level">
             </form>
             <form method="get" action="/viewSolutions" enctype="multipart/form-data">
                 <input class="option" type="submit" value="View currently existing solutions">
             </form>
             <form method="get" action="/playSokoban" enctype="multipart/form-data">
                 <input class="option" type="submit" value="Play Sokoban!">
+            </form>
+            <form method="get" action="/levelEditMenu" enctype="multipart/form-data">
+                <input class="option" type="submit" value="Edit or create a level (set)">
+            </form>
+            <form id="inlineForm" method="get" action="/manageLevelSets" enctype="multipart/form-data">
+                <input class="optionSmaller" type="submit" value="Manage currently existing level sets">
+            </form>
+            <form id="inlineForm" method="get" action="/credits" enctype="multipart/form-data">
+                <input class="optionSmaller" type="submit" value="Credits">
             </form>
         </body>
     </html>

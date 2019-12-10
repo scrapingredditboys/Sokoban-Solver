@@ -22,10 +22,11 @@ describe('loading express', () => {
         const body = res;
         const dom = new JSDOM(body.text);
         const options = dom.window.document.getElementsByClassName('option');
-        expect(options.length).to.equal(3);
-        expect(options[0].value).to.equal("Import a file");
+        expect(options.length).to.equal(4);
+        expect(options[0].value).to.equal("Use a solver to solve a level");
         expect(options[1].value).to.equal("View currently existing solutions");
         expect(options[2].value).to.equal("Play Sokoban!");
+        expect(options[3].value).to.equal("Edit or create a level (set)");
         done()
       });;
   });
@@ -61,7 +62,7 @@ describe('loading express', () => {
         });;
     });
 
-    const filePath = './tests/testFiles/Microban_155.xsb';
+    const filePath = './levelSets/preinstalled/Microban_I.xsb';
 
     it('imports files and displays /solve page correctly', (done) => {
       request(server)
@@ -71,7 +72,7 @@ describe('loading express', () => {
           const body = res;
           const dom = new JSDOM(body.text);
           const fileName = dom.window.document.getElementById('fileName');
-          expect(fileName.innerHTML).to.equal("Microban_155.xsb");
+          expect(fileName.innerHTML).to.equal("Microban_I.xsb");
           const options = dom.window.document.getElementsByTagName('input');
           expect(options[0].max).to.equal('155');
           expect(options[0].value).to.equal('1');
@@ -107,7 +108,7 @@ describe('loading express', () => {
           const body = res;
           const dom = new JSDOM(body.text);
           const fileName = dom.window.document.getElementById('fileName');
-          expect(fileName.innerHTML).to.equal("Microban_155.xsb");
+          expect(fileName.innerHTML).to.equal("Microban_I.xsb");
           const options = dom.window.document.getElementsByTagName('input');
           expect(options[0].max).to.equal('155');
           expect(options[0].value).to.equal('1');
@@ -134,7 +135,7 @@ describe('loading express', () => {
             const body = res;
             const dom = new JSDOM(body.text);
             const fileName = dom.window.document.getElementById('fileName');
-            expect(fileName.innerHTML).to.equal("Microban_155.xsb");
+            expect(fileName.innerHTML).to.equal("Microban_I.xsb");
             const options = dom.window.document.getElementsByTagName('input');
             expect(options[0].max).to.equal('155');
             expect(options[0].value).to.equal('10');
@@ -154,7 +155,7 @@ describe('loading express', () => {
             const body = res;
             const dom = new JSDOM(body.text);
             const fileName = dom.window.document.getElementById('fileName');
-            expect(fileName.innerHTML).to.equal("Microban_155.xsb");
+            expect(fileName.innerHTML).to.equal("Microban_I.xsb");
             const options = dom.window.document.getElementsByTagName('input');
             expect(options[0].max).to.equal('155');
             expect(options[0].value).to.equal('1');
@@ -174,7 +175,7 @@ describe('loading express', () => {
             const body = res;
             const dom = new JSDOM(body.text);
             const fileName = dom.window.document.getElementById('fileName');
-            expect(fileName.innerHTML).to.equal("Microban_155.xsb");
+            expect(fileName.innerHTML).to.equal("Microban_I.xsb");
             const options = dom.window.document.getElementsByTagName('input');
             expect(options[0].max).to.equal('155');
             expect(options[0].value).to.equal('1');
@@ -190,8 +191,6 @@ describe('loading express', () => {
         .end((err, res) => {
           const body = res;
           const dom = new JSDOM(body.text);
-          const rangeInputContainer = dom.window.document.getElementById('rangeInputContainer');
-          expect(rangeInputContainer.innerHTML).to.contain("Solutions:");
           const tableBody = dom.window.document.getElementsByTagName('table');
           expect(tableBody.length).to.equal(1);
           const th = dom.window.document.getElementsByTagName('th');

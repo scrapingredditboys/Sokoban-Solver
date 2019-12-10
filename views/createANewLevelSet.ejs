@@ -1,0 +1,140 @@
+<html lang="en">
+    <% include style/mainStyle %>  
+    <% include style/solve %>  
+    <% include style/levelEditor %>
+    <% include style/importChunks %>  
+    <head>
+        <% include style/head %>
+    </head>
+
+    <body>
+        <% include rootButton %>
+
+            <form method="post" action="/addCustomLevelSet" enctype="multipart/form-data">
+                <% if(fileName.length != 0) {%>
+                    <div id="fileName"><%= fileName %></div>
+                    <input type="hidden" name="newFileName" value="<%= fileName %>">
+                    <input type="hidden" name="index" value="<%= index %>">
+                    Adding level on slot number: <%= index %>
+                <% } else { %>
+                    <div id="fileName">Level set name:</div>
+                    <input type="text" name="newFileName" required minlength="3" maxlength="20">
+                <% } %>
+                <div id="sizes">
+                        Width: <input id="width" onchange="changeWidth(this.value)" type="number" value="5" min="3" max="30"/><br/>
+                        Height: <input id="height" onchange="changeHeight(this.value)"type="number" value="5" min="3" max="30"/>
+                </div>
+                Select a tile:
+                <div id="tiles">
+
+                </div>
+                <canvas id="levelPreview" width="1280" height="720"></canvas><br/>
+                <span id="validation"></span>
+                <input type="hidden" id="levelBoard" name="levelBoard">
+                <input id="submit" name="submitOne" type="submit" value="Save this level as a new level set!">
+            </form>
+
+            <script>
+                let level = <%- JSON.stringify(level) %>;
+                let fileName = "<%- fileName %>";
+                document.getElementById('levelBoard').value=JSON.stringify(level);
+                document.getElementById('width').value=level.width;
+                document.getElementById('height').value=level.height;
+                if (fileName.length) document.getElementById('submit').value="Update this level!";
+                let details = false;
+                let playSokoban = false;
+
+                
+                let defaultParams = !fileName.length;
+                <% include scripts/drawingCanvas %>
+
+                let height = 5;
+                let width = 5;
+                
+                changeWidth = () => {
+                    if (!defaultParams) {
+                        if (confirm('Are you sure you want to change the width of the board? Doing so will reset the level elements!')) {
+                            regenerateLevel();
+                            defaultParams = true;
+                        }
+                    } else {
+                        regenerateLevel();
+                        defaultParams = true;
+                    }
+                }
+                changeHeight = () => {
+                    if (!defaultParams) {
+                        if (confirm('Are you sure you want to change the width of the board? Doing so will reset the level elements!')) {
+                            regenerateLevel();
+                            defaultParams = true;
+                        }
+                    } else {
+                        regenerateLevel();
+                        defaultParams = true;
+                    }                    
+                }
+                
+                let currentPressed = "$";
+
+                regenerateLevel = () => {
+                    let board = [];
+                    height = document.getElementById('height').value;
+                    width = document.getElementById('width').value;
+                    for (let i=0; i<height; i++) {
+                        for (let j=0; j<width; j++) {
+                            if (i==0 || i==height-1 || j==0 || j==width-1) board.push('#');
+                            else if (i==1 && j==1) board.push('@');
+                            else if (i==Math.floor(height/2) && j==Math.floor(width/2)) board.push('$');
+                            else if (i==height-2 && j==width-2) board.push('.');
+                            else board.push(' ');
+                        }
+                    }
+                    level.board = board;
+                    level.width = width;
+                    level.height = height;
+                    validateCorrectness();
+                    ctx.clearRect(0,0,canvas.width,canvas.height);
+                    drawCanvas();
+                }
+
+                changeTileType = (character) => {
+                    let oldSelected = document.getElementsByClassName('selected');
+                    oldSelected[0].className = "tileTypes";
+                    let newlySelected = document.getElementById(character);
+                    newlySelected.className = "tileTypes selected";
+                    currentPressed = character;
+                }
+
+                validateCorrectness = () => {
+                    let failVerification = "";
+                    let occurrences = {};
+                    occurrences['$'] = 0;
+                    occurrences['.'] = 0;
+                    occurrences['+'] = 0;
+                    occurrences[' '] = 0;
+                    occurrences['@'] = 0;
+                    occurrences['#'] = 0;
+                    occurrences['*'] = 0;
+
+                    for (let i = 0, j = level.board.length; i < j; i++) {
+                        occurrences[level.board[i]] = (occurrences[level.board[i]] || 0) + 1;
+                    }
+                    if (parseInt(occurrences['$']) != (parseInt(occurrences['.']) + parseInt(occurrences['+']))) failVerification = "There is a different amount of boxes and goals!";
+                    if (occurrences['$']==0 && occurrences['*']==0) failVerification = "There are no boxes!";
+                    if (occurrences['@']==0 && occurrences['+']==0) failVerification = "There is no player!";
+                    if (failVerification) {
+                        document.getElementById('validation').innerHTML=failVerification + "</br>";
+                        document.getElementById('submit').disabled=true;
+                    }
+                    else {
+                        level.boxCount = occurrences['$'] + occurrences['*'];
+                        document.getElementById('validation').innerHTML='';
+                        document.getElementById('submit').disabled=false;
+                        document.getElementById('levelBoard').value=JSON.stringify(level);
+                        console.log(document.getElementById('levelBoard').value);
+                    }
+                }
+
+            </script>
+    </body>
+</html>
