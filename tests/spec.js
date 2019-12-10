@@ -62,7 +62,7 @@ describe('loading express', () => {
         });;
     });
 
-    const filePath = 'levelSets/preinstalled/Microban_I.xsb';
+    const filePath = __dirname + '/../levelSets/preinstalled/Microban_I.xsb';
 
     it('imports files and displays /solve page correctly', (done) => {
       request(server)
