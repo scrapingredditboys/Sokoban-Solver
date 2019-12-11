@@ -5,11 +5,12 @@
 
 class State {
     public:
-        State(short *_boxes, short _player, short _g, int *_history)
+        State(short *_boxes, short _player, short _g, int *_history, int _lastMove)
         : boxes(_boxes),
           player(_player),
           g(_g),
-          history(_history) {
+          history(_history),
+          lastMove(_lastMove) {
               h = 0;
         }
         ~State() {
@@ -24,6 +25,7 @@ class State {
         short h;
         short g;
         int *history;
+        int lastMove;
 };
 
 #endif // STATE_H_INCLUDED

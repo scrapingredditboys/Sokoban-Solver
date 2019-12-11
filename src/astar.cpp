@@ -2,8 +2,10 @@
 
 AStar::AStar(Level &_level)
 : level(_level),
-  table(_level) {
+  table(_level),
+  deadlockTable(3, 3, _level.getHeight(), _level.getWidth(), level.getBoxCount(), "deadlockTable3x3.txt") {
     goals = new int[level.getBoxCount()];
+    newBoard = new char[level.getSize()];
 }
 
 AStar::~AStar() {
@@ -12,6 +14,7 @@ AStar::~AStar() {
         delete[] distanceToGoal[i];
     }
     delete[] distanceToGoal;
+    delete[] newBoard;
 }
 
 std::string AStar::start(double timeLimit) {
@@ -25,7 +28,9 @@ std::string AStar::start(double timeLimit) {
     int initialLimit = initialState->h;
     delete initialState;
 
-    auto compare = [](const State *s1, const State *s2) { return s1->h < s2->h; };
+    auto compare = [this](const State *s1, const State *s2) {
+        return s1->h < s2->h;
+    };
 
     std::priority_queue<State*, std::vector<State*>, decltype(compare)> states(compare);
     int count = 0;
@@ -44,8 +49,8 @@ std::string AStar::start(double timeLimit) {
             // Check if time limit is exceeded
             clock_t timeControl = clock();
             if( double(timeControl - start) / CLOCKS_PER_SEC >= timeLimit) {
-                /*std::cout << "  Unsolved after " << double(timeControl - start) / CLOCKS_PER_SEC << "s"
-                          << "   Explored nodes: " << count << std::endl;*/
+                std::cout << "  Unsolved after " << double(timeControl - start) / CLOCKS_PER_SEC << "s"
+                          << "   Explored nodes: " << count << std::endl;
                 delete state;
                 while(!states.empty()) {
                     state = states.top();
@@ -68,8 +73,8 @@ std::string AStar::start(double timeLimit) {
                 }
                 delete[] visited;
                 clock_t end = clock();
-                /*std::cout << "  Solved in " << pushes << " pushes in " << double(end - start) / CLOCKS_PER_SEC << "s"
-                          << "   Explored nodes: " << count << std::endl;*/
+                std::cout << "  Solved in " << pushes << " pushes in " << double(end - start) / CLOCKS_PER_SEC << "s"
+                          << "   Explored nodes: " << count << std::endl;
                 return lurd;
             }
 
@@ -96,8 +101,8 @@ std::string AStar::start(double timeLimit) {
 
             calculateH(*state);
 
-            // Ignore states outside current depth limit or if simple deadlock is detected
-            if(state->h < 0 || state->g + state->h > limit) {
+            // Ignore states outside current depth limit or if deadlock is detected
+            if(state->h < 0 || state->g + state->h > limit || deadlockTable.isDeadlock(newBoard, *state, state->lastMove)) {
                 delete state;
                 continue;
             }
@@ -123,7 +128,7 @@ std::string AStar::start(double timeLimit) {
                             memcpy(newHistory, state->history, sizeof(int) * state->g);
                             newHistory[state->g] = (box - offset[j]) + level.getSize() * j;
 
-                            State *newState = new State(newBoxes, newBoxes[i] - offset[j], state->g + 1, newHistory);
+                            State *newState = new State(newBoxes, newBoxes[i] - offset[j], state->g + 1, newHistory, newBoxes[i]);
                             states.push(newState);
                         }
                     }
@@ -144,27 +149,38 @@ State* AStar::getInitialState() {
     char *board = level.getBoard();
     int boxCount = 0;
     int goalCount = 0;
+
+    delete[] newBoard;
+    newBoard = new char[level.getSize()];
+    for(int i = 0; i < level.getSize(); i++) {
+        newBoard[i] = board[i];
+    }
+
     for(short i = 0; i < level.getSize(); i++) {
         if(board[i] == '$') {
             boxes[boxCount++] = i;
+            newBoard[i] = ' ';
         }
         else if(board[i] == '*') {
             boxes[boxCount++] = i;
             goals[goalCount++] = i;
+            newBoard[i] = '.';
         }
         else if(board[i] == '+') {
             goals[goalCount++] = i;
             player = i;
+            newBoard[i] = '.';
         }
         else if(board[i] == '.') {
             goals[goalCount++] = i;
         }
         else if(board[i] == '@') {
             player = i;
+            newBoard[i] = ' ';
         }
     }
 
-    return new State(boxes, player, 0, nullptr);
+    return new State(boxes, player, 0, nullptr, -1);
 }
 
 void AStar::calculateH(State &state) {
@@ -487,3 +503,5 @@ bool AStar::isDirectBoxDeadlock(State &state, bool *visited) {
     }
     return false;
 }
+
+//Move inertia showed to be beneficial in some levels, but a burden in many others.

@@ -7,6 +7,7 @@
 #include <string.h>
 #include <vector>
 
+#include "deadlockTable.h"
 #include "hungarian.h"
 #include "level.h"
 #include "state.h"
@@ -25,6 +26,8 @@ class AStar {
         TranspositionTable table;
         int *goals;
         short **distanceToGoal;
+        DeadlockTable deadlockTable;
+        char *newBoard;
 
         State* getInitialState();
         void calculateH(State &state);
