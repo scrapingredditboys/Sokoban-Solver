@@ -31,19 +31,6 @@ int main(int argc, char **argv)
         return 0;
     }
 
-    FileReader fr;
-    std::string filename = "test_suite/Microban_155.xsb";
-    //std::string filename = "test_suite/XSokoban_90.xsb";
-    std::vector<Level*> levels = fr.readFromFile(filename);
-    for(int i = 0; i < levels.size(); i++) {
-        srand(42);
-        std::cout << "Level " << i + 1 << ": ";
-        AStar a = AStar(*(levels[i]));
-        a.start(60);
-    }
-
-    return 0;
-
     Tests t;
     t.runTests();
 
