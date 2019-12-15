@@ -49,8 +49,8 @@ std::string AStar::start(double timeLimit) {
             // Check if time limit is exceeded
             clock_t timeControl = clock();
             if( double(timeControl - start) / CLOCKS_PER_SEC >= timeLimit) {
-                std::cout << "  Unsolved after " << double(timeControl - start) / CLOCKS_PER_SEC << "s"
-                          << "   Explored nodes: " << count << std::endl;
+                /*std::cout << "  Unsolved after " << double(timeControl - start) / CLOCKS_PER_SEC << "s"
+                          << "   Explored nodes: " << count << std::endl;*/
                 delete state;
                 while(!states.empty()) {
                     state = states.top();
@@ -73,8 +73,8 @@ std::string AStar::start(double timeLimit) {
                 }
                 delete[] visited;
                 clock_t end = clock();
-                std::cout << "  Solved in " << pushes << " pushes in " << double(end - start) / CLOCKS_PER_SEC << "s"
-                          << "   Explored nodes: " << count << std::endl;
+                /*std::cout << "  Solved in " << pushes << " pushes in " << double(end - start) / CLOCKS_PER_SEC << "s"
+                          << "   Explored nodes: " << count << std::endl;*/
                 return lurd;
             }
 
