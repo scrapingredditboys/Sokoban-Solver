@@ -1,7 +1,7 @@
 #ifndef TRANSPOSITIONTABLE_H_INCLUDED
 #define TRANSPOSITIONTABLE_H_INCLUDED
 
-#define SIZE (1*1024*1024) // 2 MB
+#define SIZE (16*1024*1024) // 16 MB
 #define TYPES 2
 
 #include <bitset>

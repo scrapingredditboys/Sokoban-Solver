@@ -28,14 +28,21 @@ class AStar {
         short **distanceToGoal;
         DeadlockTable deadlockTable;
         char *newBoard;
+        char *currentBoard;
+        bool *tunnels;
 
+        bool handleState(State *state, int limit);
+        void setCurrentBoard(State &state);
         State* getInitialState();
         void calculateH(State &state);
+        int getTunnel(State &state, int box, int offset);
+        bool* getPICorral(State &state, bool *visited);
         int closestGoalLowerbound(int **graph);
         int minimumCostMatchingLowerbound(int **graph);
         void initialCalculation(State &state);
         bool isLevelWon(State &state);
         void calculateDistanceToGoal(State &state);
+        void calculateTunnels();
         int** getBipartiteGraph(State &state);
         int getGoalIndex(int position);
         int getBoxIndex(State &state, short position);
