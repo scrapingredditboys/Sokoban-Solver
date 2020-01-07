@@ -1,6 +1,6 @@
 #include "include/astar.h"
 
-AStar::AStar(Level &_level)
+AStar::AStar(Level &_level, std::string param)
 : level(_level),
   table(_level),
   deadlockTable(3, 3, _level.getHeight(), _level.getWidth(), level.getBoxCount(), "deadlockTable3x3.txt") {
@@ -8,6 +8,13 @@ AStar::AStar(Level &_level)
     newBoard = new char[level.getSize()];
     currentBoard = new char[level.getSize()];
     tunnels = new bool[level.getSize()];
+    deadSquares = new bool[level.getSize()];
+    if(param == "a*") {
+        setting = Setting::AStar;
+    }
+    else {
+        setting = Setting::IDAStar;
+    }
 }
 
 AStar::~AStar() {
@@ -28,84 +35,93 @@ std::string AStar::start(double timeLimit) {
     State *initialState = getInitialState();
     initialCalculation(*initialState);
     int initialLimit = initialState->h;
-    delete initialState;
 
-    auto compare = [this](const State *s1, const State *s2) {
+    table.setFinishState(goals);
+
+    state_comparator compare = [](const State *s1, const State *s2) {
         return (s1->h * 1000 + s1->g) > (s2->h * 1000 + s2->g);
     };
 
-    std::priority_queue<State*, std::vector<State*>, decltype(compare)> states(compare);
+    state_queue states1(compare);
+    state_queue states2(compare);
     int count = 0;
+    int q = 1;
+
+    handleState(initialState, initialLimit, q, states1, states2);
+    states1.push(initialState);
 
     for(int limit = initialLimit; ; limit += 2) {
-        table.clear();
-        initialState = getInitialState();
-        handleState(initialState, limit);
-        states.push(initialState);
-        count++;
+        q = (q + 1) % 2;
 
-        while(!states.empty()) {
+        clock_t timeControl = clock();
+        if(states1.empty() && states2.empty()) {
+            delete[] visited;
+            return "";
+        }
+
+        while((q == 0 && !states1.empty()) || (q == 1 && !states2.empty())) {
             // Grab the state with lowest lower bound estimate
-            State *state = states.top();
-            states.pop();
+            State *state;
 
-            setCurrentBoard(*state);
-
-            // Check if the level is complete
-            if(isLevelWon(*state)) {
-                int pushes = state->g;
-                std::string lurd = getLurd(state->history, state->g);
-                delete state;
-                while(!states.empty()) {
-                    state = states.top();
-                    delete state;
-                    states.pop();
-                }
-                delete[] visited;
-                clock_t end = clock();
-                /*std::cout << "  Solved in " << pushes << " pushes in " << double(end - start) / CLOCKS_PER_SEC << "s"
-                          << "   Explored nodes: " << count << std::endl;*/
-                return lurd;
+            if(q == 0) {
+                state = states1.top();
+                states1.pop();
+            }
+            else if(q == 1) {
+                state = states2.top();
+                states2.pop();
             }
 
             // Check if time limit is exceeded
             clock_t timeControl = clock();
             if( double(timeControl - start) / CLOCKS_PER_SEC >= timeLimit) {
-                /*std::cout << "  Unsolved after " << double(timeControl - start) / CLOCKS_PER_SEC << "s"
-                          << "   Explored nodes: " << count << std::endl;*/
                 delete state;
-                while(!states.empty()) {
-                    state = states.top();
+                while(!states1.empty()) {
+                    state = states1.top();
                     delete state;
-                    states.pop();
+                    states1.pop();
+                }
+                while(!states2.empty()) {
+                    state = states2.top();
+                    delete state;
+                    states2.pop();
                 }
                 delete[] visited;
                 return "";
+            }
+
+            if(setting == Setting::AStar) {
+                if(state->g > limit) {
+                    limit = state->g;
+                }
+            }
+
+            setCurrentBoard(*state);
+
+            // Check if the level is complete
+            if(isLevelWon(*state) && state->g > 0) {
+                int pushes = state->g;
+                std::string lurd = getLurd(state->history, state->g);
+                delete state;
+                while(!states1.empty()) {
+                    state = states1.top();
+                    delete state;
+                    states1.pop();
+                }
+                while(!states2.empty()) {
+                    state = states2.top();
+                    delete state;
+                    states2.pop();
+                }
+                delete[] visited;
+                clock_t end = clock();
+                return lurd;
             }
 
             memset(visited, 0, sizeof(bool) * level.getSize());
             playerBFS(visited, *state);
 
             bool *corral = getPICorral(*state, visited);
-
-            /*if(corral != nullptr || state->boxes[0] == 55) {
-                std::cout << "\n";
-                for(int i = 0; i < level.getBoxCount(); i++) {
-                    if(corral[i]) std::cout << " " << state->boxes[i];
-                }
-                for(int i = 0; i < level.getSize(); i++) {
-                    if(i % level.getWidth() == 0) std::cout << "\n";
-                    if(getBoxIndex(*state, i) != -1) std::cout << "$";
-                    else if(i == state->player) std::cout << "@";
-                    else std::cout << newBoard[i];
-                }
-                for(int i = 0; i < level.getSize(); i++) {
-                    if(i % level.getWidth() == 0) std::cout << "\n";
-                    if(visited[i]) std::cout << " ";
-                    else std::cout << "X";
-                }
-                return "";
-            }*/
 
             // For each box, try pushing it in each direction
             for(int i = 0; i < level.getBoxCount(); i++) {
@@ -115,7 +131,7 @@ std::string AStar::start(double timeLimit) {
 
                 int box = state->boxes[i];
                 for(int j = 0; j < 4; j++) {
-                    if(!visited[box - offset[j]] || newBoard[box + offset[j]] == '#') {
+                    if(!visited[box - offset[j]] || deadSquares[box + offset[j]] || newBoard[box + offset[j]] == '#') {
                         continue;
                     }
 
@@ -144,8 +160,13 @@ std::string AStar::start(double timeLimit) {
 
                     State *newState = new State(newBoxes, newBoxes[i] - offset[j], state->g + moveCount, newHistory, newBoxes[i]);
                     count++;
-                    if(handleState(newState, limit)) {
-                        states.push(newState);
+                    if(handleState(newState, limit, q, states1, states2)) {
+                        if(q == 0) {
+                            states1.push(newState);
+                        }
+                        else if(q == 1) {
+                            states2.push(newState);
+                        }
                     }
                 }
             }
@@ -159,7 +180,7 @@ std::string AStar::start(double timeLimit) {
     return "";
 }
 
-bool AStar::handleState(State *state, int limit) {
+bool AStar::handleState(State *state, int limit, int q, state_queue &states1, state_queue &states2) {
     // Calculate all reachable squares by player without pushing boxes
     bool *visited = new bool[level.getSize()];
     memset(visited, 0, sizeof(bool) * level.getSize());
@@ -179,16 +200,28 @@ bool AStar::handleState(State *state, int limit) {
             return false;
         }
     }
-    else {
+    else if(value == 0) {
         table.add(*state);
     }
 
     calculateH(*state);
 
     // Ignore states outside current depth limit or if deadlock is detected
-    if(state->h < 0 || state->g + state->h > limit || deadlockTable.isDeadlock(newBoard, *state, state->lastMove)) {
+    if(state->h < 0 || deadlockTable.isDeadlock(newBoard, *state, state->lastMove)) {
         delete state;
         return false;
+    }
+
+    if(setting == Setting::IDAStar) {
+        if(state->g + state->h > limit) {
+            if(q == 0) {
+                states2.push(state);
+            }
+            else if(q == 1) {
+                states1.push(state);
+            }
+            return false;
+        }
     }
     return true;
 }
@@ -272,6 +305,7 @@ bool* AStar::getPICorral(State &state, bool *visited) {
     int visitedCorral[level.getSize()];
     memset(visitedCorral, 0, sizeof(int) * level.getSize());
     int corralCounter = 0;
+    int width = level.getWidth();
 
     for(int i = level.getWidth() + 1; i < level.getSize() - level.getWidth() - 1; i++) {
         if(visited[i] == true || visitedCorral[i] != 0 || (currentBoard[i] != ' ' && currentBoard[i] != '.')) {
@@ -285,13 +319,13 @@ bool* AStar::getPICorral(State &state, bool *visited) {
         std::queue<int> positions;
         positions.push(i);
 
-        int offset[4] = { -1, 1, -level.getWidth(), level.getWidth() };
+        int offset[4] = { -1, 1, -width, width };
 
         while(!positions.empty()) {
             int p = positions.front();
             positions.pop();
 
-            if(p < level.getWidth() + 1 || p >= level.getSize() - level.getWidth() - 1) {
+            if(p < width + 1 || p >= level.getSize() - width - 1 || (p % width == 0) || (p % width == width - 1)) {
                 continue;
             }
 
@@ -363,12 +397,6 @@ bool* AStar::getPICorral(State &state, bool *visited) {
         }
 
         if(isPICorral) {
-                /*std::cout << "\n-------------------------------------------";
-                for(int i = 0; i < level.getSize(); i++) {
-                    if(i % level.getWidth() == 0) std::cout << "\n";
-                    if(visitedCorral[i] == corralCounter) std::cout << " ";
-                    else std::cout << "X";
-                }*/
             bool *corralBoxes = new bool[level.getBoxCount()];
             memcpy(corralBoxes, relevantBoxes, sizeof(bool) * level.getBoxCount());
 
@@ -423,6 +451,9 @@ void AStar::initialCalculation(State &state) {
 }
 
 bool AStar::isLevelWon(State &state) {
+    if(table.get(state) != -1) {
+        return false;
+    }
     for(int i = level.getWidth() + 1; i < level.getSize() - level.getWidth() - 1; i++) {
         if(newBoard[i] == '.' && currentBoard[i] != '$') {
             return false;
@@ -456,6 +487,10 @@ void AStar::calculateDistanceToGoal(State &state) {
             int p = node.position;
             int d = node.distance;
 
+            if(visited[p]) {
+                continue;
+            }
+
             visited[p] = true;
             if(board[p] == '.' || board[p] == '*' || board[p] == '+') {
                 distanceToGoal[i][getGoalIndex(p)] = d;
@@ -482,6 +517,17 @@ void AStar::calculateDistanceToGoal(State &state) {
                 }
             }
         }
+    }
+
+    for(int i = 0; i < level.getSize(); i++) {
+        bool dead = true;
+        for(int j = 0; j < level.getBoxCount(); j++) {
+            if(distanceToGoal[i][j] != -1) {
+                dead = false;
+                break;
+            }
+        }
+        deadSquares[i] = dead;
     }
 }
 
@@ -518,6 +564,9 @@ int** AStar::getBipartiteGraph(State &state) {
 }
 
 int AStar::getGoalIndex(int position) {
+    if(newBoard[position] != '.') {
+        return -1;
+    }
     for(int i = 0; i < level.getBoxCount(); i++) {
         if(goals[i] == position) {
             return i;
@@ -527,6 +576,9 @@ int AStar::getGoalIndex(int position) {
 }
 
 int AStar::getBoxIndex(State &state, short position) {
+    if(currentBoard[position] != '$') {
+        return -1;
+    }
     for(int i = 0; i < level.getBoxCount(); i++) {
         if(state.boxes[i] == position) {
             return i;

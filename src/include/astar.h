@@ -2,6 +2,7 @@
 #define ASTAR_H_INCLUDED
 
 #include <ctime>
+#include <functional>
 #include <iostream>
 #include <queue>
 #include <string.h>
@@ -13,15 +14,23 @@
 #include "state.h"
 #include "transpositionTable.h"
 
+typedef std::function<int (const State*, const State*)> state_comparator;
+typedef std::priority_queue<State*, std::vector<State*>, state_comparator> state_queue;
+
 // In reality, this is the IDA* approach, not A*
 
 class AStar {
     public:
-        AStar(Level &_level);
+        AStar(Level &_level, std::string param = "ida*");
         ~AStar();
         std::string start(double timeLimit);
 
     private:
+        enum class Setting {
+            AStar,
+            IDAStar
+        };
+
         Level &level;
         TranspositionTable table;
         int *goals;
@@ -30,8 +39,10 @@ class AStar {
         char *newBoard;
         char *currentBoard;
         bool *tunnels;
+        bool *deadSquares;
+        Setting setting;
 
-        bool handleState(State *state, int limit);
+        bool handleState(State *state, int limit, int q, state_queue &states1, state_queue &states2);
         void setCurrentBoard(State &state);
         State* getInitialState();
         void calculateH(State &state);

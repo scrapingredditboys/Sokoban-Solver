@@ -22,6 +22,16 @@ TranspositionTable::~TranspositionTable() {
     delete[] table;
 }
 
+void TranspositionTable::setFinishState(int *goals) {
+    long long h = 0;
+    for(int i = 0; i < level.getBoxCount(); i++) {
+        h ^= zobristValues[goals[i]][0];
+    }
+    for(int i = 0; i < level.getSize(); i++) {
+        add(h ^ zobristValues[i][1], -1);
+    }
+}
+
 void TranspositionTable::clear() {
     memset(table, 0, sizeof(short)*SIZE);
 }
