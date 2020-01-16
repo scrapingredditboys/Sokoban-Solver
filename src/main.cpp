@@ -16,8 +16,8 @@ int main(int argc, char **argv)
     if(argc > 1) {
         FileReader fr;
         std::string str(argv[1]);
+        std::string mode = "ida*";
         std::vector<Level*> levels = fr.readFromString(str);
-        AStar astar = AStar(*(levels[0]));
 
         double timeLimit = 60;
         char *p;
@@ -25,7 +25,11 @@ int main(int argc, char **argv)
         if(argc > 2) {
             timeLimit = strtol(argv[2], &p, 10)/1000.0;
         }
+        if(argc > 3) {
+            mode = argv[3];
+        }
 
+        AStar astar = AStar(*(levels[0]), mode);
         std::cout << astar.start(timeLimit);
 
         return 0;
@@ -35,18 +39,4 @@ int main(int argc, char **argv)
     t.runTests();
 
     return 0;
-
-    /*int file = 6;
-
-    FileReader fr;
-    std::vector<Level*> levels = fr.readFromFile(files[file]);
-
-    //std::cout << "Solving " << files[file] << "\n";
-    for(int level = 0; level < 1; level++) {
-        //std::cout << "Level " << level + 1 << ": ";
-        AStar astar = AStar(*(levels[level]));
-        astar.start(60);
-    }
-
-    return 0;*/
 }
