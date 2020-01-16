@@ -246,7 +246,6 @@ app.get("/customLevelSetDetails", function(req, res) {
 });
 
 app.post("/customLevelSetDetailsLevel", function(req, res) {
-  console.log(levels.levelsArray);
   new formidable.IncomingForm().parse(req, (err, fields, files) => {
     if (err) {
       console.error("Error", err);
@@ -293,11 +292,11 @@ app.post("/addCustomLevelSet", function(req, res) {
       fileName = fields.newFileName;
       currentIndex = levelIndex-1;
       update=true;
-      if (levels.levelsArray[currentIndex]=='undefined') levels.levelsArray.push(levels.levelsArray[currentIndex-1]);
+      console.log(currentIndex);
+      if (typeof levels.levelsArray[currentIndex]=='undefined') levels.levelsArray.push(JSON.parse(JSON.stringify(levels.levelsArray[currentIndex-1])));
     }
-
-    console.log(levels);
     let customLevel = JSON.parse(fields.levelBoard);
+    console.log(levels.levelsArray[currentIndex]);
     levels.levelsArray[currentIndex].width = customLevel.width;
     levels.levelsArray[currentIndex].boxCount = customLevel.boxCount;
     levels.levelsArray[currentIndex].height = customLevel.height;
@@ -413,7 +412,7 @@ const doingTheSolvingWork = async (method, methodSub, timeout) => {
       break;
     case "Kacper":
       execString =
-        'solvers\\sokosolver.exe "' + levelString + '" ' + timeout * 1000;
+        'solvers\\sokosolver.exe "' + levelString + '" ' + timeout * 1000 + ' ' + methodSub;
       break;
   }
   let fileJSON = JSON.parse(fs.readFileSync("solutions/log.json"));
@@ -426,7 +425,7 @@ const doingTheSolvingWork = async (method, methodSub, timeout) => {
       levelIndex: currentIndex,
       level: levels.levelsArray[currentIndex - 1],
       method: method,
-      arguments: method != "Kacper" && methodSub,
+      arguments: methodSub,
       solution: stdout.trim(),
       milisecondsTaken: timeFinal,
       startDate: time.toLocaleString("en-GB", { timeZone: "UTC" })

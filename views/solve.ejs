@@ -29,7 +29,7 @@
                         <option value="Kacper">Kacper</option>
                         <option value="JSoko">JSoko</option>
                     </select>
-                    <span id="methodSub"></span>
+                    <span id="methodSub"><select name="methodSub"><option value="ida*">IDA*</option><option value="a*">A*</option></select></span>
                     <div>
                         Timeout (in s):
                         <span id="methodTimeout"><input type="number" name="methodTimeout" min="1" max="180" value="30"></span>
@@ -48,9 +48,9 @@
                         let methodSub = document.getElementById('methodSub');
 
                         if (methodPicker.value=="JSoko") {
-                            methodSub.innerHTML = '<select name="methodSub"> <option value="as">Any solution</option><option value="po">Push optimal</option><option value="pm">Pushes moves</option><option value="pm">Moves pushes</option><option value="e">Evolutionary</option><option value="bfs">BFS</option></select>';
-                        } else {
-                            methodSub.innerHTML = '';
+                            methodSub.innerHTML = '<select name="methodSub"><option value="pm">Pushes moves</option><option value="mp">Moves pushes</option></select>';
+                        } else if (methodPicker.value=="Kacper") {
+                            methodSub.innerHTML = '<select name="methodSub"><option value="ida*">IDA*</option><option value="a*">A*</option></select>';
                         }
                     }
                     

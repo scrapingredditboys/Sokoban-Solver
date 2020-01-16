@@ -132,7 +132,6 @@ drawCanvas = () => {
 
     //Drawing player
     if (playerOnGround) {
-        //console.log(playerIcon);
         ctx.drawImage(playerIcon, canvas.width/2-currentSize/2-(centerY-playerY)*currentSize, canvas.height/2-currentSize/2-(centerX-playerX)*currentSize, currentSize, currentSize);
     } else {
         ctx.drawImage(playerGoal, canvas.width/2-currentSize/2-(centerY-playerY)*currentSize, canvas.height/2-currentSize/2-(centerX-playerX)*currentSize, currentSize, currentSize);
@@ -140,7 +139,6 @@ drawCanvas = () => {
 
     ctx.strokeStyle = "black";
     level.board.forEach((symbol, index) => {
-        //console.log(symbol, index);
         tilesOnGroundPositions.push(new BoardTilePosition(canvas.width/2-currentSize/2-centerY*currentSize+index%level.width*currentSize, canvas.height/2-currentSize/2-centerX*currentSize+Math.floor(index/level.width)*currentSize, currentSize, currentSize, symbol));
         switch(symbol) {
             case "#": {

@@ -5,24 +5,17 @@ solutionDetails.innerHTML += "<span><span id='inb4info'>Method used to solve the
 if (solution.arguments.length) {
     solutionDetails.innerHTML += "<span><span id='inb4info'>Submethod used: </span>" 
     switch(solution.arguments) {
-        case 'as':
-            solutionDetails.innerHTML += "Any Solution";
-            break;
-        case 'po':
-            solutionDetails.innerHTML += "Push Optimal";
-            break;
         case 'pm':
             solutionDetails.innerHTML += "Pushes Moves";
             break;
         case 'mp':
             solutionDetails.innerHTML += "Moves Pushes";
             break;
-        case 'e':
-            solutionDetails.innerHTML += "Evolutionary";
+        case 'ida*':
+            solutionDetails.innerHTML += "IDA* (modified BFS)";
             break;
-        case 'bfs':
-            solutionDetails.innerHTML += "BFS";
-            break;
+        case 'a*':
+            solutionDetails.innerHTML += "A*";
     }
     solutionDetails.innerHTML += "</span><br \>";
 }

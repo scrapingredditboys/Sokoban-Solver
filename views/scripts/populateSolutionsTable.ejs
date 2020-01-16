@@ -3,7 +3,7 @@ displaySolutions = () => {
     tableBody.innerHTML = null;
     solutions.forEach((solution, index) => {
         let pushes = solution.solution.length ? solution.solution.match(/[A-Z]/g).length : 0;
-        let methodName = solution.method=='JSoko' ? solution.method + ' (' + solution.arguments + ')' : solution.method;
+        let methodName = solution.method + ' (' + solution.arguments + ')';
         if (pushes || !skip)
             tableBody.innerHTML += '<tr><td><a href="/details?id='+ index + '">' + solution.levelIndex + '</a></td><td>' 
                 + solution.fileName + '</td><td>' + methodName + '</td><td>' + solution.milisecondsTaken + '</td><td>' 
