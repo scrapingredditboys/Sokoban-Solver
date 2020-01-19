@@ -8,6 +8,7 @@
 #include <string.h>
 #include <vector>
 
+#include "deadlockTable.h"
 #include "hungarian.h"
 #include "level.h"
 #include "state.h"

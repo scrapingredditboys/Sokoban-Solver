@@ -2,7 +2,8 @@
 
 AStar::AStar(Level &_level, std::string param)
 : level(_level),
-  table(_level) {
+  table(_level),
+  deadlockTable(3, 3, _level.getHeight(), _level.getWidth(), level.getBoxCount(), "deadlockTable3x3.txt") {
     goals = new int[level.getBoxCount()];
     newBoard = new char[level.getSize()];
     currentBoard = new char[level.getSize()];
@@ -249,24 +250,28 @@ State* AStar::getInitialState() {
     for(short i = 0; i < level.getSize(); i++) {
         if(board[i] == '$') {
             boxes[boxCount++] = i;
+            newBoard[i] = ' ';
         }
         else if(board[i] == '*') {
             boxes[boxCount++] = i;
             goals[goalCount++] = i;
+            newBoard[i] = '.';
         }
         else if(board[i] == '+') {
             goals[goalCount++] = i;
             player = i;
+            newBoard[i] = '.';
         }
         else if(board[i] == '.') {
             goals[goalCount++] = i;
         }
         else if(board[i] == '@') {
             player = i;
+            newBoard[i] = ' ';
         }
     }
 
-    return new State(boxes, player, 0, nullptr);
+    return new State(boxes, player, 0, nullptr, -1);
 }
 
 void AStar::calculateH(State &state) {
@@ -613,6 +618,7 @@ std::string AStar::getLurd(int *history, int n) {
     char LURD[] = "LRUD";
 
     for(int i = 0; i < n; i++) {
+        setCurrentBoard(*state);
         int j = 0;
         int pos = history[i];
         while(pos >= level.getSize()) {
@@ -734,3 +740,5 @@ bool AStar::isDirectBoxDeadlock(State &state, bool *visited) {
     }
     return false;
 }
+
+//Move inertia showed to be beneficial in some levels, but a burden in many others.
