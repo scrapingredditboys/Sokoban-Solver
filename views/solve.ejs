@@ -29,7 +29,7 @@
                         <option value="Kacper">Kacper</option>
                         <option value="JSoko">JSoko</option>
                     </select>
-                    <span id="methodSub"><select name="methodSub"><option value="ida*">IDA*</option><option value="a*">A*</option></select></span>
+                    <span id="methodSub"><select name="methodSub"><option value="ida*">BFS</option><option value="a*">A*</option></select></span>
                     <div>
                         Timeout (in s):
                         <span id="methodTimeout"><input type="number" name="methodTimeout" min="1" max="180" value="30"></span>
@@ -50,7 +50,7 @@
                         if (methodPicker.value=="JSoko") {
                             methodSub.innerHTML = '<select name="methodSub"><option value="pm">Pushes moves</option><option value="mp">Moves pushes</option></select>';
                         } else if (methodPicker.value=="Kacper") {
-                            methodSub.innerHTML = '<select name="methodSub"><option value="ida*">IDA*</option><option value="a*">A*</option></select>';
+                            methodSub.innerHTML = '<select name="methodSub"><option value="ida*">BFS</option><option value="a*">A*</option></select>';
                         }
                     }
                     

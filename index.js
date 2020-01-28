@@ -425,7 +425,7 @@ const doingTheSolvingWork = async (method, methodSub, timeout) => {
       levelIndex: currentIndex,
       level: levels.levelsArray[currentIndex - 1],
       method: method,
-      arguments: methodSub,
+      arguments: methodSub=="ida*" ? "bfs" : methodSub,
       solution: stdout.trim(),
       milisecondsTaken: timeFinal,
       startDate: time.toLocaleString("en-GB", { timeZone: "UTC" })
